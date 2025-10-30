@@ -1,0 +1,10 @@
+{
+  "name": "el-ecommerce-skyline",
+  "version": "1.0.0",
+  "description": "EL E-COMMERCE SKYLINE - Sistema de gestión con Google Sheets",
+  "type": "module",
+  "scripts": {
+    "dev": "python3 -m http.server 3000",
+    "build": "echo 'No build needed'"
+  }
+}
