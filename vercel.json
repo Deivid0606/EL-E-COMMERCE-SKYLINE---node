@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "name": "el-ecommerce-skyline",
+  "builds": [
+    {
+      "src": "Index.html",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/Index.html"
+    }
+  ]
+}
