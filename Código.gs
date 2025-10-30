@@ -2,6 +2,7 @@
  * EL E-COMMERCE SKYLINE — Backend (Code.gs)
  * DB: Google Sheets (fijo por ID)
  * Roles: ADMIN | VENDEDOR | DELIVERY | DESPACHANTE
+ * ✅ MODIFICADO para Vercel con APIs REST
  **************************************************/
 
 
@@ -947,7 +948,7 @@ function metrics(token, fromISO, toISO){
   // <<< LÍNEA CORREGIDA: sort sin el error de sintaxis >>>
   const top = Object.keys(topProd)
     .map(k => ({ name: k, qty: topProd[k].qty, revenue: topProd[k].revenue }))
-    .sort((a, b) => b.qty - a)
+    .sort((a, b) => b.qty - a.qty)
     .slice(0, 15);
 
 
@@ -1356,6 +1357,8 @@ function saveMyProfile(token, data){
   }
   return { ok:true };
 }
+
+
 // =================================================================
 // ========== APIs REST PARA VERCEL (MANTIENE TODO LO EXISTENTE) ==========
 // =================================================================
