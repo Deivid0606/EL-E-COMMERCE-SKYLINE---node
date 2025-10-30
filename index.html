@@ -988,7 +988,6 @@
   </div>
 
 <script>
- <script>
   // =========================
   // Variables y helpers
   // =========================
@@ -1001,9 +1000,9 @@
   const norm = s => String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
 
   // =========================
-  // Configuración API
+  // Configuración API para Vercel
   // =========================
-  // REEMPLAZA ESTO CON TU URL REAL DE APPS SCRIPT
+  // 🔥 IMPORTANTE: Reemplaza esto con tu URL real de Apps Script
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/TU_SCRIPT_ID/exec';
 
   // Función universal para llamar al backend
@@ -1070,7 +1069,7 @@
   };
 
   // =========================
-  // Auth (MODIFICADO)
+  // Auth (MODIFICADO para Vercel)
   // =========================
   async function onRegister(){
     try {
@@ -1111,7 +1110,7 @@
   function logout(){ localStorage.removeItem(tokenKey); openLogin(); }
 
   // =========================
-  // Init (MODIFICADO)
+  // Init (MODIFICADO para Vercel)
   // =========================
   async function init(){
     const tok=localStorage.getItem(tokenKey);
@@ -1187,7 +1186,7 @@
   }
 
   // =========================
-  // Refresco suave (MODIFICADO)
+  // Refresco suave (MODIFICADO para Vercel)
   // =========================
   async function softRefresh(){
     await refreshOrders();
@@ -1201,7 +1200,7 @@
   }
 
   // =========================
-  // Catálogo / Productos (MODIFICADO)
+  // Catálogo / Productos (MODIFICADO para Vercel)
   // =========================
   async function loadCatalog(){
     try {
@@ -1228,344 +1227,7 @@
     }
   }
 
-  // ... (MANTENGO TODAS TUS FUNCIONES EXISTENTES IGUALES, SOLO CAMBIANDO LAS LLAMADAS)
-  // Las funciones como wireProductSearch, renderProductCards, etc. SE MANTIENEN IGUAL
-
-  // =========================
-  // Ciudades (MODIFICADO)
-  // =========================
-  async function buildCityDropdown(){
-    try {
-      const tok=localStorage.getItem(tokenKey);
-      clientCityPrices = await callBackend('getDeliveryClientPrices', { token: tok });
-      const sel=o_city; sel.innerHTML='<option value="">Selecciona ciudad…</option>'+clientCityPrices.map(r=>`<option>${r.city}</option>`).join('');
-    } catch (e) {
-      toast(e.message||e);
-    }
-  }
-
-  // =========================
-  // Pedidos (MODIFICADO)
-  // =========================
-  async function saveOrder(){
-    try {
-      const tok=localStorage.getItem(tokenKey);
-      const order={ 
-        customer_name:o_customer.value.trim(), 
-        phone:o_phone.value.trim(), 
-        city:o_city.value.trim(), 
-        street:o_street.value.trim(), 
-        district:o_district.value.trim(),
-        email:o_email.value.trim(), 
-        obs:o_obs.value.trim(), 
-        items:getItems() 
-      };
-      
-      if (!order.customer_name || !order.phone || !order.city) { toast('Completa cliente / teléfono / ciudad'); return; }
-      if (order.items.length===0){ toast('Agrega al menos 1 ítem'); return; }
-      
-      await callBackend('addOrder', { token: tok, order: order });
-      toast('Pedido guardado'); 
-      await refreshOrders(); 
-      await refreshDashboard();
-      o_customer.value=''; o_phone.value=''; o_email.value=''; o_street.value=''; o_district.value=''; o_obs.value=''; itemsBox.innerHTML=''; addItemRow();
-    } catch (e) {
-      toast(e.message||e);
-    }
-  }
-
-  async function refreshOrders(){
-    try {
-      const tok=localStorage.getItem(tokenKey);
-      lastOrders = await callBackend('listOrders', { token: tok });
-      renderOrdersLast();
-      renderPendingGuides();
-      markUpdated();
-    } catch (e) {
-      toast(e.message||e);
-    }
-  }
-
-  // ... CONTINÚA CON TODAS LAS DEMÁS FUNCIONES MODIFICADAS DE LA MISMA MANERA
-
-  // =========================
-  // Dashboard (MODIFICADO)
-  // =========================
-  async function refreshDashboard(){
-    try {
-      const tok=localStorage.getItem(tokenKey);
-      const f=document.getElementById('dash_from')?.value||''; 
-      const t=document.getElementById('dash_to')?.value||'';
-      
-      const res = await callBackend('metrics', { token: tok, fromISO: f, toISO: t });
-      
-      // ... (tu código existente para renderizar dashboard)
-      kpi_orders.textContent=nf(res.cards.orders);
-      kpi_sold.textContent=nf(res.cards.sold);
-      kpi_delivered.textContent=nf(res.cards.delivered);
-      kpi_canceled.textContent=nf(res.cards.canceled);
-
-      if (me?.role === 'DELIVERY') {
-        // ... (cálculos específicos para delivery)
-      } else {
-        kpi_profit.textContent = nf(res.cards.profit);
-      }
-
-      // ... (resto de tu código de gráficos)
-      markUpdated();
-    } catch (e) {
-      toast(e.message||e);
-    }
-  }
-
-  // =========================
-  // Wallet (MODIFICADO)
-  // =========================
-  async function refreshWallet(){
-    try {
-      const tok=localStorage.getItem(tokenKey);
-      const res = await callBackend('getWallet', { token: tok, emailOpt: '' });
-      
-      w_balance.textContent = nf(res.balance_gs||0);
-      const tb=document.getElementById('wallet_tbody'); tb.innerHTML='';
-      (res.txs||[]).forEach(t=>{
-        const tr=document.createElement('tr');
-        tr.innerHTML=`<td>${new Date(t.created_at).toLocaleString('es-PY')}</td>
-          <td>${t.type}</td><td>${t.order_id||''}</td><td class="right">${nf(t.amount_gs)}</td><td>${t.note||''}</td>`;
-        tb.appendChild(tr);
-      });
-      markUpdated();
-    } catch (e) {
-      toast(e.message||e);
-    }
-  }
-
-  // =========================
-  // Funciones RESTANTES - PATRÓN SIMILAR
-  // =========================
-  // Todas las demás funciones siguen el mismo patrón:
-  // 1. Cambiar google.script.run... por await callBackend(...)
-  // 2. Mantener toda la lógica existente igual
-
-  // Ejemplos:
-  async function updateOrderStatusHandler(orderId, status) {
-    try {
-      const tok = localStorage.getItem(tokenKey);
-      await callBackend('updateOrderStatus', { token: tok, id: orderId, status: status, obs: '' });
-      toast('Estado actualizado');
-      await refreshDashboard();
-      await refreshWallet();
-      await refreshOrders();
-    } catch (err) {
-      toast(err.message||err);
-      await refreshOrders();
-    }
-  }
-
-  async function assignDeliveryHandler(orderId, deliveryEmail) {
-    try {
-      const tok = localStorage.getItem(tokenKey);
-      await callBackend('assignDelivery', { token: tok, id: orderId, deliveryEmail: deliveryEmail });
-      toast('Delivery asignado');
-      await refreshOrders();
-      await refreshDashboard();
-    } catch (err) {
-      toast(err.message||err);
-      await refreshOrders();
-    }
-  }
-
-  // ... Y ASÍ CON TODAS LAS DEMÁS FUNCIONES
-
-  // =========================
-  // Autoinicio
-  // =========================
-  (function boot(){
-    const saved = localStorage.getItem(emailKey)||''; 
-    if (saved){ 
-      try{ 
-        li_email.value=saved; 
-        li_saveemail.checked=true; 
-      }catch(e){} 
-    }
-    init();
-  })();
-</script>
-
-  // sello de última actualización
-  function timeStamp(){ const d=new Date(); return d.toLocaleString('es-PY'); }
-  function markUpdated(){ const el=document.getElementById('lastUpdateText'); if (el) el.textContent=timeStamp(); }
-
-  function setUserBoxUI(user){
-    const box=document.getElementById('userBox');
-    box.innerHTML=user?`<span class="chip">${user.email}</span><button class="btn" onclick="logout()">Salir</button>`:'';
-  }
-  function setNavForAuth(isAuthed, role){
-    const vis=(id,ok)=>document.getElementById(id).classList.toggle('hidden', !ok);
-    vis('navLogin', !isAuthed);
-    vis('navDash', isAuthed);
-    vis('navNews', isAuthed);
-
-    // === NUEVO: botón visible solo para ADMIN y DESPACHANTE
-    vis('navWithGuides', isAuthed && (role==='ADMIN' || role==='DESPACHANTE'));
-
-    vis('navOrders', isAuthed);
-    vis('navWallet', isAuthed);
-    vis('navProd', isAuthed && role!=='DELIVERY');
-    vis('navOrder', isAuthed && role==='VENDEDOR');
-    vis('navRates', isAuthed);
-    vis('navComms', isAuthed && role==='ADMIN');
-    vis('navCounter', isAuthed && role==='ADMIN');
-    vis('navClosures', isAuthed && role==='ADMIN');
-
-    // ===== NUEVO: PERFIL para TODOS =====
-    vis('navProfile', isAuthed);
-  }
-  const openLogin = ()=>{ me=null; setUserBoxUI(null); setNavForAuth(false); document.getElementById('roleChip').textContent='';
-    show('auth');
-    // precargar email recordado
-    const saved = localStorage.getItem(emailKey)||''; if (saved){ li_email.value=saved; li_saveemail.checked=true; }
-  };
-
-  // =========================
-  // Auth
-  // =========================
-  function onRegister(){
-    google.script.run.withSuccessHandler(()=>{ toast('Cuenta creada. Inicia sesión.'); li_email.value = re_email.value.trim(); })
-      .withFailureHandler(e=>toast(e.message||e))
-      .register(re_name.value.trim(), re_email.value.trim(), re_pass.value, re_role.value);
-  }
-  function onLogin(){
-    const remember = !!document.getElementById('li_remember').checked;
-    const rememberEmail = !!document.getElementById('li_saveemail').checked;
-    if (rememberEmail) localStorage.setItem(emailKey, (li_email.value||'').trim());
-    else localStorage.removeItem(emailKey);
-
-    google.script.run.withSuccessHandler(res=>{
-        localStorage.setItem(tokenKey, res.session.token);
-        init();
-      })
-      .withFailureHandler(e=>toast(e.message||e))
-      .login(li_email.value.trim(), li_pass.value, remember);
-  }
-  function logout(){ localStorage.removeItem(tokenKey); openLogin(); }
-
-  // =========================
-  // Init
-  // =========================
-  function init(){
-    const tok=localStorage.getItem(tokenKey);
-    google.script.run.withSuccessHandler(res=>{
-      if (!res.authenticated){ openLogin(); return; }
-      me=res.user; setUserBoxUI(me); setNavForAuth(true, me.role);
-      document.getElementById('roleChip').textContent = me.role;
-
-      const today=new Date(); const ymd=d=>d.toISOString().slice(0,10); const d7=new Date(today.getTime()-6*24*3606*1000);
-      ['dash_from','of_from','pc_from','pg_from'].forEach(id=>{ const el=document.getElementById(id); if (el) el.value = ymd(d7); });
-      ['dash_to','of_to','pc_to','pg_to'].forEach(id=>{ const el=document.getElementById(id); if (el) el.value = ymd(today); });
-      ['cl_from','cl_to'].forEach(id=>{ const el=document.getElementById(id); if (el) el.value = ymd(today); });
-
-      if (me.role==='DELIVERY'){ 
-        document.getElementById('kpi5_title').textContent='Monto a rendir (Gs)'; 
-        document.getElementById('th_comm').textContent='Tarifa repartidor (Gs)'; 
-        document.getElementById('kpiSumEntregadoRow').classList.remove('hidden');
-      } else { 
-        document.getElementById('th_comm').textContent='Monto a comisionar (Gs)'; 
-      }
-      document.getElementById('guideBlocks')?.classList.toggle('hidden', me.role!=='DESPACHANTE');
-
-      loadCatalog();
-      buildCityDropdown();
-      refreshOrders();
-      loadRates();
-      loadClientPrices();
-      refreshDashboard();
-      refreshWallet();
-      if (me.role==='ADMIN'){ loadSeqAdmin(); }
-      if (me.role==='ADMIN'){
-        google.script.run.withSuccessHandler(ds=>{
-          const sel = document.getElementById('cl_delivery');
-          if (sel){
-            const opts = ['<option value="">Todos los repartidores</option>']
-              .concat((ds||[]).map(d=>`<option value="${(d.email||'').toLowerCase()}">${d.name||d.email}</option>`));
-            sel.innerHTML = opts.join('');
-          }
-        }).withFailureHandler(()=>{}).listUsersByRole(tok,'DELIVERY');
-      }
-
-      // preparar búsqueda en vivo
-      wireSearchInputs();
-      // búsqueda productos en vivo
-      wireProductSearch();
-
-      // === NUEVO: búsqueda en vivo vista Pedidos con guías
-      wirePendingGuidesSearch();
-
-      markUpdated();
-      show('dashboard');
-
-      const b=document.getElementById('btnAddProduct');
-      if (b) b.classList.toggle('hidden', me.role!=='ADMIN');
-    }).me(tok);
-
-    try{
-      const params = new URLSearchParams(location.search);
-      const resetTok = params.get('reset');
-      if (resetTok){ window._pendingResetToken = resetTok; openResetSet(); }
-    }catch(e){}
-
-    document.getElementById('navClosures')?.addEventListener('click', ()=>{
-      loadRates(); refreshOrders(); loadClosures();
-    });
-  }
-
-  // =========================
-  // Refresco suave (sin cerrar sesión)
-  // =========================
-  function softRefresh(){
-    refreshOrders();
-    refreshDashboard();
-    refreshWallet();
-    loadRates();
-    loadClientPrices();
-
-    // === NUEVO: re-render vista Pedidos con guías
-    renderPendingGuides();
-
-    markUpdated();
-    toast('Actualizado');
-  }
-
-  // =========================
-  // Catálogo / Productos
-  // =========================
-  function loadCatalog(){
-    const tok=localStorage.getItem(tokenKey);
-    const stat=document.getElementById('catalogStatus'); if (stat) stat.textContent='Cargando catálogo...';
-    google.script.run.withSuccessHandler(rows=>{
-      products=rows; catalogMap={}; rows.forEach(p=>catalogMap[(p.sku||'').trim()]=p);
-
-      // === render tabla (lo que ya tenías)
-      const tb=document.querySelector('#tblProducts tbody'); if (tb){ tb.innerHTML='';
-        rows.forEach(p=>{
-          const tr=document.createElement('tr');
-          tr.innerHTML=`<td><img class="thumb" src="${p.image_url||''}" onerror="this.src='https://via.placeholder.com/64'"></td>
-            <td>${p.title}</td><td>${p.sku}</td><td class="right">${nf(p.provider_price_gs)}</td><td class="right">${p.stock}</td>`;
-          tb.appendChild(tr);
-        });
-      }
-      if (stat) stat.textContent='Catálogo cargado';
-
-      // === NUEVO: render cards
-      renderProductCards();
-
-      // si estás en "Cargar pedido", inicializar items
-      const box=document.getElementById('itemsBox'); if (box){ if(!box.children.length){ addItemRow(); } recalcOrder(); }
-      markUpdated();
-    }).withFailureHandler(e=>toast(e.message||e)).listProducts(tok);
-  }
-
-  // === NUEVO: búsqueda en vivo de productos (cards)
+  // Búsqueda en vivo de productos (se mantiene igual)
   function wireProductSearch(){
     const q=document.getElementById('prod_q'); if (!q) return;
     let t=null;
@@ -1574,7 +1236,7 @@
     q.addEventListener('keyup', (e)=>{ if (e.key==='Enter') renderProductCards(); });
   }
 
-  // === NUEVO: renderizador de cards
+  // Renderizador de cards (se mantiene igual)
   function renderProductCards(){
     const grid=document.getElementById('prodGrid'); if (!grid) return;
     const q=(document.getElementById('prod_q')?.value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
@@ -1602,9 +1264,7 @@
           <button class="btn small" onclick="openProductModal('${p.sku||''}')">Ver</button>
         </div>
       `;
-      // click en toda la card
       div.addEventListener('click', (ev)=>{
-        // evitar doble apertura si clic en el botón
         if ((ev.target||{}).closest && (ev.target).closest('button')) return;
         openProductModal(p.sku||'');
       });
@@ -1612,7 +1272,6 @@
     });
   }
 
-  // === NUEVO: toggle tabla (se conserva la tabla original, por si la querés usar)
   function toggleProdTable(){
     const wrap=document.getElementById('prodTableWrap');
     const btn=document.getElementById('prod_toggle_table');
@@ -1620,7 +1279,7 @@
     btn.textContent = hidden ? 'Mostrar tabla' : 'Ocultar tabla';
   }
 
-  // === NUEVO: Modal de producto
+  // Modal de producto (se mantiene igual)
   function openProductModal(sku){
     const p = (products||[]).find(x=>String(x.sku||'')===String(sku));
     if (!p) return;
@@ -1629,34 +1288,50 @@
     document.getElementById('pm_sku').textContent = p.sku || '—';
     document.getElementById('pm_provider').textContent = nf(p.provider_price_gs||0);
     document.getElementById('pm_stock').textContent = nf(p.stock||0);
-
     document.getElementById('productModal').style.display='flex';
   }
+  
   function closeProductModal(){ document.getElementById('productModal').style.display='none'; }
 
   function openAddProduct(){ document.getElementById('addProductBox').classList.toggle('hidden'); }
-  function saveNewProduct(){
-    const tok=localStorage.getItem(tokenKey);
-    const private_emails = (np_private.value||'').split(',').map(s=>s.trim()).filter(Boolean);
-    const p={ title:np_title.value.trim(), sku:np_sku.value.trim(), provider_price_gs:Number(np_price.value||0), stock:Number(np_stock.value||0), image_url:np_img.value.trim(), private_emails };
-    if (!p.title || !p.sku) { toast('Título y SKU son obligatorios'); return; }
-    google.script.run.withSuccessHandler(()=>{ toast('Producto guardado'); loadCatalog(); addProductBox.classList.add('hidden'); })
-      .withFailureHandler(e=>toast(e.message||e)).addProduct(tok, p);
+  
+  async function saveNewProduct(){
+    try {
+      const tok=localStorage.getItem(tokenKey);
+      const private_emails = (np_private.value||'').split(',').map(s=>s.trim()).filter(Boolean);
+      const p={ 
+        title:np_title.value.trim(), 
+        sku:np_sku.value.trim(), 
+        provider_price_gs:Number(np_price.value||0), 
+        stock:Number(np_stock.value||0), 
+        image_url:np_img.value.trim(), 
+        private_emails 
+      };
+      if (!p.title || !p.sku) { toast('Título y SKU son obligatorios'); return; }
+      await callBackend('addProduct', { token: tok, product: p });
+      toast('Producto guardado'); 
+      await loadCatalog(); 
+      document.getElementById('addProductBox').classList.add('hidden');
+    } catch (e) {
+      toast(e.message||e);
+    }
   }
 
   // =========================
-  // Ciudades (cliente)
+  // Ciudades (MODIFICADO para Vercel)
   // =========================
-  function buildCityDropdown(){
-    const tok=localStorage.getItem(tokenKey);
-    google.script.run.withSuccessHandler(rows=>{
-      clientCityPrices=rows||[];
-      const sel=o_city; sel.innerHTML='<option value="">Selecciona ciudad…</option>'+rows.map(r=>`<option>${r.city}</option>`).join('');
-    }).getDeliveryClientPrices(tok);
+  async function buildCityDropdown(){
+    try {
+      const tok=localStorage.getItem(tokenKey);
+      clientCityPrices = await callBackend('getDeliveryClientPrices', { token: tok });
+      const sel=o_city; sel.innerHTML='<option value="">Selecciona ciudad…</option>'+clientCityPrices.map(r=>`<option>${r.city}</option>`).join('');
+    } catch (e) {
+      toast(e.message||e);
+    }
   }
 
   // =========================
-  // Pedido (form)
+  // Pedido (form) - Funciones locales (sin cambios)
   // =========================
   function addItemRow(){
     const box=document.getElementById('itemsBox');
@@ -1673,6 +1348,7 @@
       <button class="btn small" onclick="this.parentElement.remove(); recalcOrder()">Quitar</button>`;
     box.appendChild(row); recalcOrder();
   }
+  
   function getItems(){
     const rows=[...document.querySelectorAll('.orderItemRow')]; const items=[];
     rows.forEach(row=>{
@@ -1682,6 +1358,7 @@
     });
     return items;
   }
+  
   function recalcOrder(){
     const rows=[...document.querySelectorAll('.orderItemRow')];
     let totalVenta=0, totalProv=0;
@@ -1700,19 +1377,36 @@
     o_total.value=nf(totalVenta); o_delivery.value=nf(del);
     o_commission.value = nf(totalVenta - (totalProv + del));
   }
-  function saveOrder(){
-    const tok=localStorage.getItem(tokenKey);
-    const order={ customer_name:o_customer.value.trim(), phone:o_phone.value.trim(), city:o_city.value.trim(), street:o_street.value.trim(), district:o_district.value.trim(),
-      email:o_email.value.trim(), obs:o_obs.value.trim(), items:getItems() };
-    if (!order.customer_name || !order.phone || !order.city) { toast('Completa cliente / teléfono / ciudad'); return; }
-    if (order.items.length===0){ toast('Agrega al menos 1 ítem'); return; }
-    google.script.run.withSuccessHandler(()=>{ toast('Pedido guardado'); refreshOrders(); refreshDashboard();
+  
+  async function saveOrder(){
+    try {
+      const tok=localStorage.getItem(tokenKey);
+      const order={ 
+        customer_name:o_customer.value.trim(), 
+        phone:o_phone.value.trim(), 
+        city:o_city.value.trim(), 
+        street:o_street.value.trim(), 
+        district:o_district.value.trim(),
+        email:o_email.value.trim(), 
+        obs:o_obs.value.trim(), 
+        items:getItems() 
+      };
+      
+      if (!order.customer_name || !order.phone || !order.city) { toast('Completa cliente / teléfono / ciudad'); return; }
+      if (order.items.length===0){ toast('Agrega al menos 1 ítem'); return; }
+      
+      await callBackend('addOrder', { token: tok, order: order });
+      toast('Pedido guardado'); 
+      await refreshOrders(); 
+      await refreshDashboard();
       o_customer.value=''; o_phone.value=''; o_email.value=''; o_street.value=''; o_district.value=''; o_obs.value=''; itemsBox.innerHTML=''; addItemRow();
-    }).withFailureHandler(e=>toast(e.message||e)).addOrder(tok,order);
+    } catch (e) {
+      toast(e.message||e);
+    }
   }
 
   // =========================
-  // WhatsApp (DELIVERY)
+  // WhatsApp (DELIVERY) - MODIFICADO para Vercel
   // =========================
   function toWhatsAppNumber(raw){
     const s = String(raw||'').replace(/[^\d+]/g,'');
@@ -1722,40 +1416,43 @@
     if (!d.startsWith('595')) d = '595' + d;
     return '+' + d;
   }
-  function sendWhatsApp(orderId){
-    const tok=localStorage.getItem(tokenKey);
-    const order=(lastOrders||[]).find(o=>String(o.id)===String(orderId));
-    if (!order){ toast('Pedido no encontrado'); return; }
-    const phone=toWhatsAppNumber(order.phone||'');
-    if (!phone){ toast('El pedido no tiene teléfono válido'); return; }
-    const header=`Buenas, le escribo del sector de repartos 👋
+  
+  async function sendWhatsApp(orderId){
+    try {
+      const tok=localStorage.getItem(tokenKey);
+      const order=(lastOrders||[]).find(o=>String(o.id)===String(orderId));
+      if (!order){ toast('Pedido no encontrado'); return; }
+      const phone=toWhatsAppNumber(order.phone||'');
+      if (!phone){ toast('El pedido no tiene teléfono válido'); return; }
+      
+      const txt = await callBackend('getGuideText', { token: tok, orderId: orderId });
+      const header=`Buenas, le escribo del sector de repartos 👋
 Quiero coordinar la entrega de su pedido. Estos son los detalles:`;
-    const footer = `\n¿Podría enviarme su ubicación por Google Maps para llegar de forma segura? Muchas gracias.`;
-    google.script.run.withSuccessHandler(txt=>{
+      const footer = `\n¿Podría enviarme su ubicación por Google Maps para llegar de forma segura? Muchas gracias.`;
       const msg = `${header}\n\n${txt}\n${footer}`;
       const url = `https://wa.me/${phone.replace('+','')}?text=${encodeURIComponent(msg)}`;
       window.open(url,'_blank');
-    }).withFailureHandler(e=>toast(e.message||e)).getGuideText(tok,orderId);
+    } catch (e) {
+      toast(e.message||e);
+    }
   }
 
   // =========================
-  // Pedidos (listado)
+  // Pedidos (listado) - MODIFICADO para Vercel
   // =========================
-  function refreshOrders(){
-    const tok=localStorage.getItem(tokenKey);
-    google.script.run.withSuccessHandler(rows=>{ 
-      lastOrders=rows; 
-      renderOrdersLast(); 
-      // === NUEVO: refrescar también la vista Pedidos con guías
+  async function refreshOrders(){
+    try {
+      const tok=localStorage.getItem(tokenKey);
+      lastOrders = await callBackend('listOrders', { token: tok });
+      renderOrdersLast();
       renderPendingGuides();
-      markUpdated(); 
-    })
-      .withFailureHandler(e=>toast(e.message||e)).listOrders(tok);
-    google.script.run.withSuccessHandler(ds=>{ deliveries=ds||[]; renderOrdersLast(); })
-      .withFailureHandler(()=>{}).listUsersByRole(tok,'DELIVERY');
+      markUpdated();
+    } catch (e) {
+      toast(e.message||e);
+    }
   }
 
-  // 🔎 Búsqueda: soporta ID tipo "A1089" y "1089" + normaliza acentos
+  // Búsqueda: soporta ID tipo "A1089" y "1089" + normaliza acentos
   function renderOrdersLast(){
     const tb=document.querySelector('#tblOrders tbody'); if (!tb) return;
 
@@ -1795,7 +1492,7 @@ Quiero coordinar la entrega de su pedido. Estos son los detalles:`;
       if (d<f || d>t) return false;
       if (!qNorm) return true;
 
-      const idNum = String(o.id||'').replace(/^[a-z]+/i,''); // A1089 -> 1089
+      const idNum = String(o.id||'').replace(/^[a-z]+/i,'');
       const hay = [
         o.customer_name||'', o.phone||'', o.id||'', idNum, o.city||'', o.created_by||''
       ].map(norm).join(' ');
@@ -1896,38 +1593,68 @@ Quiero coordinar la entrega de su pedido. Estos son los detalles:`;
     });
 
     tb.querySelectorAll('.stateSel').forEach(sel=>{
-      sel.onchange=(e)=>{
+      sel.onchange=async (e)=>{
         const id=e.target.getAttribute('data-id'); const status=e.target.value;
         const tok=localStorage.getItem(tokenKey);
-        google.script.run.withSuccessHandler(()=>{ toast('Estado actualizado'); refreshDashboard(); refreshWallet(); refreshOrders(); })
-          .withFailureHandler(err=>{ toast(err.message||err); refreshOrders(); })
-          .updateOrderStatus(tok,id,status,'');
+        try {
+          await callBackend('updateOrderStatus', { token: tok, id: id, status: status, obs: '' });
+          toast('Estado actualizado'); 
+          await refreshDashboard(); 
+          await refreshWallet(); 
+          await refreshOrders();
+        } catch (err) {
+          toast(err.message||err); 
+          await refreshOrders();
+        }
       };
     });
+    
     tb.querySelectorAll('.state2Sel').forEach(sel=>{
-      sel.onchange=(e)=>{
+      sel.onchange=async (e)=>{
         const id=e.target.getAttribute('data-id'); const status2=e.target.value;
         const tok=localStorage.getItem(tokenKey);
-        google.script.run.withSuccessHandler(()=>{ toast('Estado 2 actualizado'); refreshWallet(); refreshOrders(); refreshDashboard(); })
-          .withFailureHandler(err=>{ toast(err.message||err); refreshOrders(); })
-          .updateOrderStatus2(tok,id,status2);
+        try {
+          await callBackend('updateOrderStatus2', { token: tok, id: id, status2: status2 });
+          toast('Estado 2 actualizado'); 
+          await refreshWallet(); 
+          await refreshOrders(); 
+          await refreshDashboard();
+        } catch (err) {
+          toast(err.message||err); 
+          await refreshOrders();
+        }
       };
     });
+    
     tb.querySelectorAll('.assignSel').forEach(sel=>{
-      sel.onchange=(e)=>{
+      sel.onchange=async (e)=>{
         const id=e.target.getAttribute('data-id'); const deliveryEmail=e.target.value; const tok=localStorage.getItem(tokenKey);
-        google.script.run.withSuccessHandler(()=>{ toast('Delivery asignado'); refreshOrders(); refreshDashboard(); })
-          .withFailureHandler(err=>{ toast(err.message||err); refreshOrders(); })
-          .assignDelivery(tok,id,deliveryEmail);
+        try {
+          await callBackend('assignDelivery', { token: tok, id: id, deliveryEmail: deliveryEmail });
+          toast('Delivery asignado'); 
+          await refreshOrders(); 
+          await refreshDashboard();
+        } catch (err) {
+          toast(err.message||err); 
+          await refreshOrders();
+        }
       };
     });
+    
     tb.querySelectorAll('.packInp').forEach(inp=>{
-      inp.onchange=(e)=>{
+      inp.onchange=async (e)=>{
         const id=e.target.getAttribute('data-id'); const qty=Number(e.target.value||0);
         const tok=localStorage.getItem(tokenKey);
-        google.script.run.withSuccessHandler(()=>{ toast('Empaques guardados'); refreshOrders(); refreshWallet(); })
-          .withFailureHandler(err=>{ toast(err.message||err); refreshOrders(); })
-          .setPackCount?.(tok,id,qty);
+        try {
+          // Nota: setPackCount no está implementado en el backend, lo dejamos comentado
+          // await callBackend('setPackCount', { token: tok, id: id, qty: qty });
+          toast('Empaques guardados (función no implementada)'); 
+          await refreshOrders(); 
+          await refreshWallet();
+        } catch (err) {
+          toast(err.message||err); 
+          await refreshOrders();
+        }
       };
     });
   }
@@ -1943,12 +1670,15 @@ Quiero coordinar la entrega de su pedido. Estos son los detalles:`;
   }
 
   // =========================
-  // Dashboard
+  // Dashboard (MODIFICADO para Vercel)
   // =========================
-  function refreshDashboard(){
-    const tok=localStorage.getItem(tokenKey);
-    const f=document.getElementById('dash_from')?.value||''; const t=document.getElementById('dash_to')?.value||'';
-    google.script.run.withSuccessHandler(res=>{
+  async function refreshDashboard(){
+    try {
+      const tok=localStorage.getItem(tokenKey);
+      const f=document.getElementById('dash_from')?.value||''; const t=document.getElementById('dash_to')?.value||'';
+      
+      const res = await callBackend('metrics', { token: tok, fromISO: f, toISO: t });
+      
       kpi_orders.textContent=nf(res.cards.orders);
       kpi_sold.textContent=nf(res.cards.sold);
       kpi_delivered.textContent=nf(res.cards.delivered);
@@ -2013,15 +1743,19 @@ Quiero coordinar la entrega de su pedido. Estos son los detalles:`;
       (res.map||[]).forEach(x=>{ const li=document.createElement('li'); li.textContent=`${x.city}: ${nf(x.qty)} pedidos (Gs ${nf(x.revenue)})`; ml.appendChild(li); });
 
       markUpdated();
-    }).withFailureHandler(e=>toast(e.message||e)).metrics(tok,f,t);
+    } catch (e) {
+      toast(e.message||e);
+    }
   }
 
   // =========================
-  // Wallet
+  // Wallet (MODIFICADO para Vercel)
   // =========================
-  function refreshWallet(){
-    const tok=localStorage.getItem(tokenKey);
-    google.script.run.withSuccessHandler(res=>{
+  async function refreshWallet(){
+    try {
+      const tok=localStorage.getItem(tokenKey);
+      const res = await callBackend('getWallet', { token: tok, emailOpt: '' });
+      
       w_balance.textContent = nf(res.balance_gs||0);
       const tb=document.getElementById('wallet_tbody'); tb.innerHTML='';
       (res.txs||[]).forEach(t=>{
@@ -2031,15 +1765,18 @@ Quiero coordinar la entrega de su pedido. Estos son los detalles:`;
         tb.appendChild(tr);
       });
       markUpdated();
-    }).getWallet(tok, '');
+    } catch (e) {
+      toast(e.message||e);
+    }
   }
 
   // =========================
-  // Novedades
+  // Novedades (MODIFICADO para Vercel)
   // =========================
-  function refreshNews(){
-    const tok=localStorage.getItem(tokenKey);
-    google.script.run.withSuccessHandler(rows=>{
+  async function refreshNews(){
+    try {
+      const tok=localStorage.getItem(tokenKey);
+      const rows = await callBackend('listNews', { token: tok });
       const tb=document.getElementById('news_tbody'); tb.innerHTML='';
       (rows||[]).forEach(n=>{
         const tr=document.createElement('tr');
@@ -2047,86 +1784,126 @@ Quiero coordinar la entrega de su pedido. Estos son los detalles:`;
         tb.appendChild(tr);
       });
       markUpdated();
-    }).listNews(tok);
+    } catch (e) {
+      toast(e.message||e);
+    }
   }
 
   // =========================
-  // Tarifas + Precios cliente
+  // Tarifas + Precios cliente (MODIFICADO para Vercel)
   // =========================
-  function loadRates(){
-    const tok=localStorage.getItem(tokenKey);
-    document.getElementById('ratesAdminBox').classList.toggle('hidden', me?.role!=='ADMIN');
-    google.script.run.withSuccessHandler(rows=>{
+  async function loadRates(){
+    try {
+      const tok=localStorage.getItem(tokenKey);
+      document.getElementById('ratesAdminBox').classList.toggle('hidden', me?.role!=='ADMIN');
+      const rows = await callBackend('getDeliveryRates', { token: tok, emailOpt: '' });
+      
       const tb=document.getElementById('rates_tbody'); tb.innerHTML='';
       (rows||[]).forEach(r=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${r.email}</td><td>${r.city}</td><td class="right">${nf(r.rate_gs)}</td>`; tb.appendChild(tr); });
       allRatesMap = {};
       (rows||[]).forEach(r=>{ const em = norm(String(r.email||'')); const ct = norm(String(r.city||'')); if (!allRatesMap[em]) allRatesMap[em] = {}; allRatesMap[em][ct] = Number(r.rate_gs||0); });
       rateMap = {}; if (me?.role === 'DELIVERY') { (rows||[]).forEach(r=>{ rateMap[norm(r.city)] = Number(r.rate_gs||0); }); }
       markUpdated();
-    }).getDeliveryRates(tok, '');
+    } catch (e) {
+      toast(e.message||e);
+    }
   }
-  function saveRate(){
-    const tok=localStorage.getItem(tokenKey);
-    google.script.run.withSuccessHandler(()=>{ toast('Tarifa guardada'); loadRates(); })
-      .withFailureHandler(e=>toast(e.message||e))
-      .setDeliveryRate(tok, dr_email.value.trim(), dr_city.value.trim(), Number(dr_rate.value||0));
+  
+  async function saveRate(){
+    try {
+      const tok=localStorage.getItem(tokenKey);
+      await callBackend('setDeliveryRate', { 
+        token: tok, 
+        deliveryEmail: dr_email.value.trim(), 
+        city: dr_city.value.trim(), 
+        feeGs: Number(dr_rate.value||0) 
+      });
+      toast('Tarifa guardada'); 
+      await loadRates();
+    } catch (e) {
+      toast(e.message||e);
+    }
   }
-  function loadClientPrices(){
-    const tok=localStorage.getItem(tokenKey);
-    document.getElementById('clientPricesAdminBox').classList.toggle('hidden', me?.role!=='ADMIN');
-    google.script.run.withSuccessHandler(rows=>{
+  
+  async function loadClientPrices(){
+    try {
+      const tok=localStorage.getItem(tokenKey);
+      document.getElementById('clientPricesAdminBox').classList.toggle('hidden', me?.role!=='ADMIN');
+      const rows = await callBackend('getDeliveryClientPrices', { token: tok });
       const tb=document.getElementById('client_prices_tbody'); if (!tb) return; tb.innerHTML='';
       (rows||[]).forEach(r=>{ const tr=document.createElement('tr'); tr.innerHTML = `<td>${r.city}</td><td class="right">${nf(r.price)}</td>`; tb.appendChild(tr); });
       markUpdated();
-    }).withFailureHandler(e=>toast(e.message||e)).getDeliveryClientPrices(tok);
+    } catch (e) {
+      toast(e.message||e);
+    }
   }
-  function saveClientPrice(){
-    const tok=localStorage.getItem(tokenKey);
-    const city = (cp_city.value||'').trim(); const price = Number(cp_price.value||0);
-    if (!city || price<=0){ toast('Ciudad y precio son obligatorios'); return; }
-    google.script.run.withSuccessHandler(()=>{ toast('Precio guardado'); cp_city.value=''; cp_price.value=''; loadClientPrices(); buildCityDropdown(); })
-      .withFailureHandler(e=>toast(e.message||e))
-      .setClientCityPrice(tok, city, price);
+  
+  async function saveClientPrice(){
+    try {
+      const tok=localStorage.getItem(tokenKey);
+      const city = (cp_city.value||'').trim(); const price = Number(cp_price.value||0);
+      if (!city || price<=0){ toast('Ciudad y precio son obligatorios'); return; }
+      await callBackend('setClientCityPrice', { token: tok, city: city, price: price });
+      toast('Precio guardado'); 
+      cp_city.value=''; cp_price.value=''; 
+      await loadClientPrices(); 
+      await buildCityDropdown();
+    } catch (e) {
+      toast(e.message||e);
+    }
   }
 
   // =========================
-  // Guía
+  // Guía (MODIFICADO para Vercel)
   // =========================
-  function openGuide(id){
+  async function openGuide(id){
     guideOrderId=id; guideText.value='Cargando...'; document.getElementById('guideModal').style.display='flex';
-    const tok=localStorage.getItem(tokenKey);
-    google.script.run.withSuccessHandler(txt=>{ guideText.value=txt; })
-      .withFailureHandler(e=>{ guideText.value='Error: '+(e.message||e); })
-      .getGuideText(tok,id);
+    try {
+      const tok=localStorage.getItem(tokenKey);
+      const txt = await callBackend('getGuideText', { token: tok, orderId: id });
+      guideText.value=txt;
+    } catch (e) {
+      guideText.value='Error: '+(e.message||e);
+    }
   }
+  
   function closeGuide(){ document.getElementById('guideModal').style.display='none'; }
-  function downloadGuide(){
-    const tok=localStorage.getItem(tokenKey);
-    google.script.run.withSuccessHandler(f=>{ window.open(f.url,'_blank'); })
-      .withFailureHandler(e=>toast(e.message||e))
-      .generateGuidePDF(tok, guideOrderId);
+  
+  async function downloadGuide(){
+    try {
+      const tok=localStorage.getItem(tokenKey);
+      const f = await callBackend('generateGuidePDF', { token: tok, orderId: guideOrderId });
+      window.open(f.url,'_blank');
+    } catch (e) {
+      toast(e.message||e);
+    }
   }
 
   // =========================
-  // Pago de Comisiones (ADMIN) con Estado 1 editable
+  // Pago de Comisiones (ADMIN) - MODIFICADO para Vercel
   // =========================
-  function loadCommissions(){
-    const tok=localStorage.getItem(tokenKey);
-    const f=document.getElementById('pc_from').value||''; const t=document.getElementById('pc_to').value||'';
-    const vend=(document.getElementById('pc_vendor').value||'').trim(); const only=document.getElementById('pc_only').value||''; const q=(document.getElementById('pc_q').value||'').trim();
+  async function loadCommissions(){
+    try {
+      const tok=localStorage.getItem(tokenKey);
+      const f=document.getElementById('pc_from').value||''; const t=document.getElementById('pc_to').value||'';
+      const vend=(document.getElementById('pc_vendor').value||'').trim(); const only=document.getElementById('pc_only').value||''; const q=(document.getElementById('pc_q').value||'').trim();
 
-    // NUEVO: usamos la función FLEX que no obliga Estado 1 = ENTREGADO
-    google.script.run.withSuccessHandler(rows=>{
+      const rows = await callBackend('listCommissionsFlex', { 
+        token: tok, 
+        fromISO: f, 
+        toISO: t, 
+        vendorEmailOpt: vend, 
+        onlyStatus: only, 
+        q: q 
+      });
+
       const tb=document.getElementById('comms_tbody'); tb.innerHTML='';
 
-      // === En Comisión, limitar selector Estado 1 a estos 2 (como pediste):
-      const state1Opts = ['ENTREGADO','ENCOMIENDA ENTREGADA']; // <-- SOLO estos 2 aquí
+      const state1Opts = ['ENTREGADO','ENCOMIENDA ENTREGADA'];
 
-      // Mostrar SOLO filas con esos estados (si querés ver los demás, quitá este filtro)
       const allowed = new Set(state1Opts.map(s=>s.toUpperCase()));
       const visibles = (rows||[]).filter(o => allowed.has(String(o.status||'').toUpperCase()));
 
-      /* === NUEVO: KPIs de Pago de comisiones (cantidad y suma de comisiones) === */
       const pcCnt = visibles.length;
       let pcSum = 0;
       visibles.forEach(o => { pcSum += Number(o.commission_gs || 0); });
@@ -2134,7 +1911,6 @@ Quiero coordinar la entrega de su pedido. Estos son los detalles:`;
       const kSumEl = document.getElementById('pc_k_sum');
       if (kCntEl) kCntEl.textContent = nf(pcCnt);
       if (kSumEl) kSumEl.textContent = nf(pcSum);
-      /* === FIN NUEVO === */
 
       (visibles||[]).forEach(o=>{
         const stateSel = `<select class="commStateSel" data-id="${o.id}">
@@ -2156,111 +1932,142 @@ Quiero coordinar la entrega de su pedido. Estos son los detalles:`;
       });
 
       tb.querySelectorAll('.commStateSel').forEach(s=>{
-        s.onchange=(e)=>{
+        s.onchange=async (e)=>{
           const id=e.target.getAttribute('data-id'); const status=e.target.value; const tok=localStorage.getItem(tokenKey);
-          google.script.run.withSuccessHandler(()=>{ toast('Estado 1 actualizado'); loadCommissions(); refreshWallet(); refreshDashboard(); })
-            .withFailureHandler(err=>{ toast(err.message||err); loadCommissions(); })
-            .updateOrderStatus(tok,id,status,'');
+          try {
+            await callBackend('updateOrderStatus', { token: tok, id: id, status: status, obs: '' });
+            toast('Estado 1 actualizado'); 
+            await loadCommissions(); 
+            await refreshWallet(); 
+            await refreshDashboard();
+          } catch (err) {
+            toast(err.message||err); 
+            await loadCommissions();
+          }
         };
       });
+      
       tb.querySelectorAll('.commPaySel').forEach(s=>{
-        s.onchange=(e)=>{
+        s.onchange=async (e)=>{
           const id=e.target.getAttribute('data-id'); const paid=(e.target.value==='PAGADO'); const tok=localStorage.getItem(tokenKey);
-          google.script.run.withSuccessHandler(()=>{ toast('Pago comisión actualizado'); loadCommissions(); refreshWallet(); })
-            .withFailureHandler(err=>{ toast(err.message||err); loadCommissions(); })
-            .payVendorCommission(tok,id,paid);
+          try {
+            await callBackend('payVendorCommission', { token: tok, id: id, paid: paid });
+            toast('Pago comisión actualizado'); 
+            await loadCommissions(); 
+            await refreshWallet();
+          } catch (err) {
+            toast(err.message||err); 
+            await loadCommissions();
+          }
         };
       });
       markUpdated();
-    }).withFailureHandler(e=>toast(e.message||e))
-      .listCommissionsFlex(tok,f,t,vend,only,q);
+    } catch (e) {
+      toast(e.message||e);
+    }
   }
 
-  // Botón "Marcar todos como PAGADO" (solo lo que ves en la tabla ahora)
-  function markAllCommissionsPaid(){
-    const tok=localStorage.getItem(tokenKey);
-    const rows=[...document.querySelectorAll('#comms_tbody tr')];
-    if (!rows.length){ toast('No hay filas en vista'); return; }
-    let done=0;
-    const ids=rows.map(tr=>tr.children[1]?.textContent?.trim()).filter(Boolean);
-    (function next(i){
-      if (i>=ids.length){ toast(`Marcados ${done}/${ids.length} como PAGADO`); loadCommissions(); refreshWallet(); return; }
-      const id=ids[i];
-      google.script.run.withSuccessHandler(()=>{ done++; next(i+1); })
-        .withFailureHandler(()=>{ next(i+1); })
-        .payVendorCommission(tok,id,true);
-    })(0);
+  // Botón "Marcar todos como PAGADO"
+  async function markAllCommissionsPaid(){
+    try {
+      const tok=localStorage.getItem(tokenKey);
+      const rows=[...document.querySelectorAll('#comms_tbody tr')];
+      if (!rows.length){ toast('No hay filas en vista'); return; }
+      let done=0;
+      const ids=rows.map(tr=>tr.children[1]?.textContent?.trim()).filter(Boolean);
+      
+      for (const id of ids) {
+        try {
+          await callBackend('payVendorCommission', { token: tok, orderId: id, paid: true });
+          done++;
+        } catch (e) {
+          console.error('Error paying commission for:', id, e);
+        }
+      }
+      
+      toast(`Marcados ${done}/${ids.length} como PAGADO`);
+      await loadCommissions();
+      await refreshWallet();
+    } catch (e) {
+      toast(e.message||e);
+    }
   }
 
   // =========================
-  // Secuencia de IDs (admin)
+  // Secuencia de IDs (admin) - MODIFICADO para Vercel
   // =========================
-  function loadSeqAdmin(){
+  async function loadSeqAdmin(){
     if (!me || me.role!=='ADMIN') return;
-    const tok=localStorage.getItem(tokenKey);
-    google.script.run
-      .withSuccessHandler(res=>{
-        document.getElementById('seq_prefix').textContent = res.prefix;
-        document.getElementById('seq_pad').textContent    = res.pad;
-        document.getElementById('seq_value').textContent  = res.value;
-      })
-      .withFailureHandler(e=>toast(e.message||e))
-      .adminGetOrderCounter(tok);
+    try {
+      const tok=localStorage.getItem(tokenKey);
+      const res = await callBackend('adminGetOrderCounter', { token: tok });
+      document.getElementById('seq_prefix').textContent = res.prefix;
+      document.getElementById('seq_pad').textContent    = res.pad;
+      document.getElementById('seq_value').textContent  = res.value;
+    } catch (e) {
+      toast(e.message||e);
+    }
   }
-  function setSeq(){
-    const tok=localStorage.getItem(tokenKey);
-    const n = Number(document.getElementById('seq_new').value || '');
-    if (!Number.isInteger(n) || n<0){ toast('Ingresá un entero >= 0'); return; }
-    google.script.run
-      .withSuccessHandler(res=>{
-        toast('Contador actualizado');
-        document.getElementById('seq_value').textContent = res.value;
-        document.getElementById('seq_new').value = '';
-      })
-      .withFailureHandler(e=>toast(e.message||e))
-      .adminSetOrderCounter(tok, n);
+  
+  async function setSeq(){
+    try {
+      const tok=localStorage.getItem(tokenKey);
+      const n = Number(document.getElementById('seq_new').value || '');
+      if (!Number.isInteger(n) || n<0){ toast('Ingresá un entero >= 0'); return; }
+      const res = await callBackend('adminSetOrderCounter', { token: tok, num: n });
+      toast('Contador actualizado');
+      document.getElementById('seq_value').textContent = res.value;
+      document.getElementById('seq_new').value = '';
+    } catch (e) {
+      toast(e.message||e);
+    }
   }
 
   // =========================
-  // Reset de contraseña
+  // Reset de contraseña - MODIFICADO para Vercel
   // =========================
   function openResetRequest(){ document.getElementById('resetReqModal').style.display='flex'; }
   function closeResetRequest(){ document.getElementById('resetReqModal').style.display='none'; }
-  function submitResetRequest(){
-    const email = (document.getElementById('reset_email').value||'').trim();
-    if (!email){ toast('Ingresá tu email'); return; }
-    google.script.run
-      .withSuccessHandler(()=>{ toast('Si el email existe, te enviamos un enlace'); closeResetRequest(); })
-      .withFailureHandler(e=>toast(e.message||e))
-      .requestPasswordReset(email);
+  
+  async function submitResetRequest(){
+    try {
+      const email = (document.getElementById('reset_email').value||'').trim();
+      if (!email){ toast('Ingresá tu email'); return; }
+      await callBackend('requestPasswordReset', { email: email });
+      toast('Si el email existe, te enviamos un enlace'); 
+      closeResetRequest();
+    } catch (e) {
+      toast(e.message||e);
+    }
   }
 
   function openResetSet(){ document.getElementById('resetSetModal').style.display='flex'; }
   function closeResetSet(){ document.getElementById('resetSetModal').style.display='none'; }
-  function submitResetSet(){
-    const p1 = (document.getElementById('reset_newpass').value||'');
-    const p2 = (document.getElementById('reset_newpass2').value||'');
-    if (!p1 || !p2){ toast('Completá ambas contraseñas'); return; }
-    if (p1 !== p2){ toast('Las contraseñas no coinciden'); return; }
-    const tok = window._pendingResetToken || '';
-    if (!tok){ toast('Token inválido'); return; }
-    google.script.run
-      .withSuccessHandler(res=>{
-        toast('Contraseña actualizada');
-        if (res?.session?.token){
-          localStorage.setItem(tokenKey, res.session.token);
-          closeResetSet();
-          init();
-        } else {
-          closeResetSet();
-        }
-      })
-      .withFailureHandler(e=>toast(e.message||e))
-      .resetPasswordWithToken(tok, p1);
+  
+  async function submitResetSet(){
+    try {
+      const p1 = (document.getElementById('reset_newpass').value||'');
+      const p2 = (document.getElementById('reset_newpass2').value||'');
+      if (!p1 || !p2){ toast('Completá ambas contraseñas'); return; }
+      if (p1 !== p2){ toast('Las contraseñas no coinciden'); return; }
+      const tok = window._pendingResetToken || '';
+      if (!tok){ toast('Token inválido'); return; }
+      const res = await callBackend('resetPasswordWithToken', { token: tok, newPass: p1 });
+      toast('Contraseña actualizada');
+      if (res?.session?.token){
+        localStorage.setItem(tokenKey, res.session.token);
+        closeResetSet();
+        init();
+      } else {
+        closeResetSet();
+      }
+    } catch (e) {
+      toast(e.message||e);
+    }
   }
 
   // =========================
-  // Cierres (ADMIN): Estado 1 editable + sin "eliminar"
+  // Cierres (ADMIN) - MODIFICADO para Vercel
   // =========================
   function getOrderFeeForDelivery(o){
     const asentada = Number(o.delivery_fee_gs||0);
@@ -2269,9 +2076,8 @@ Quiero coordinar la entrega de su pedido. Estos son los detalles:`;
     return Number(byDel[ct]||0);
   }
   
-  // === NUEVO: Función para calcular pedidos asignados hoy ===
   function calculateAssignedToday(rows, f, t, dsel) {
-    const today = new Date().toISOString().slice(0, 10); // Fecha actual en formato YYYY-MM-DD
+    const today = new Date().toISOString().slice(0, 10);
     const assignedToday = rows.filter(o => {
       const assignedDate = o.assigned_at ? new Date(o.assigned_at).toISOString().slice(0, 10) : null;
       if (!assignedDate || assignedDate !== today) return false;
@@ -2281,7 +2087,6 @@ Quiero coordinar la entrega de su pedido. Estos son los detalles:`;
     return assignedToday.length;
   }
   
-  // === NUEVO: Función para alternar estado de rendición ===
   function toggleRendicion() {
     const btn = document.getElementById('rendicionBtn');
     if (btn.classList.contains('pendiente')) {
@@ -2297,118 +2102,133 @@ Quiero coordinar la entrega de su pedido. Estos son los detalles:`;
     }
   }
 
-  function loadClosures(){
-    const tok = localStorage.getItem(tokenKey);
-    const f = (document.getElementById('cl_from')?.value||'');
-    const t = (document.getElementById('cl_to')?.value||'');
-    const dsel = (document.getElementById('cl_delivery')?.value||'').trim().toLowerCase();
-    const type = (document.getElementById('cl_type')?.value||'').trim().toUpperCase();
+  async function loadClosures(){
+    try {
+      const tok = localStorage.getItem(tokenKey);
+      const f = (document.getElementById('cl_from')?.value||'');
+      const t = (document.getElementById('cl_to')?.value||'');
+      const dsel = (document.getElementById('cl_delivery')?.value||'').trim().toLowerCase();
+      const type = (document.getElementById('cl_type')?.value||'').trim().toUpperCase();
 
-    const afterOrders = (rows)=>{
-      const from = f? new Date(f+'T00:00:00') : new Date('1970-01-01');
-      const to   = t? new Date(t+'T23:59:59') : new Date('2999-12-31');
+      const afterOrders = async (rows)=>{
+        const from = f? new Date(f+'T00:00:00') : new Date('1970-01-01');
+        const to   = t? new Date(t+'T23:59:59') : new Date('2999-12-31');
 
-      const base = (rows||[]).filter(o=>{
-        const baseDate = o.assigned_at ? new Date(o.assigned_at) : (o.created_at? new Date(o.created_at): null);
-        if (!baseDate || baseDate<from || baseDate>to) return false;
-        if (dsel && String(o.assigned_delivery||'').toLowerCase()!==dsel) return false;
-        return true;
-      });
-
-      const tableRows = base.filter(o=>{ if (!type) return true; return String(o.status||'').toUpperCase()===type; });
-
-      const delivered = base.filter(o=> String(o.status||'').toUpperCase()==='ENTREGADO');
-      const cnt = delivered.length;
-      let sumTotal=0, sumFee=0;
-      delivered.forEach(o=>{ sumTotal += Number(o.total_gs||0); sumFee   += getOrderFeeForDelivery(o); });
-      const net = sumTotal - sumFee;
-
-      // === NUEVO: Calcular pedidos asignados hoy ===
-      const assignedToday = calculateAssignedToday(rows, f, t, dsel);
-
-      document.getElementById('cl_k_cnt').textContent = nf(cnt);
-      document.getElementById('cl_k_rev').textContent = nf(sumTotal);
-      document.getElementById('cl_k_fee').textContent = nf(sumFee);
-      document.getElementById('cl_k_net').textContent = nf(net);
-      document.getElementById('cl_k_assigned_today').textContent = nf(assignedToday);
-
-      // === NUEVO: Mostrar botón de rendición solo para ADMIN ===
-      const rendicionContainer = document.getElementById('rendicionBtnContainer');
-      if (me?.role === 'ADMIN') {
-        rendicionContainer.classList.remove('hidden');
-      } else {
-        rendicionContainer.classList.add('hidden');
-      }
-
-      const tb = document.getElementById('cl_tbody'); tb.innerHTML='';
-      const state1Opts = ['PENDIENTE','EN RUTA','ENTREGADO','ENCOMIENDA ENTREGADA','CANCELADO','REAGENDADO','NO CONTESTA','RECHAZADO','RECHAZADO EN EL LUGAR','NO DESEA','CANCELÓ POR WHATSAPP','DEVUELTO A DEPÓSITO'];
-
-      tableRows.sort((a,b)=> new Date(a.assigned_at||a.created_at) - new Date(b.assigned_at||b.created_at))
-        .forEach(o=>{
-          const fee = getOrderFeeForDelivery(o);
-          const neto = Number(o.total_gs||0) - fee;
-          const badgeS2 = o.status2 ? `<span class="badge">${o.status2}</span>` : '';
-          const s1Sel = (me?.role==='ADMIN')
-            ? `<select class="clo_s1" data-id="${o.id}">
-                ${state1Opts.map(s=>`<option value="${s}" ${s===o.status?'selected':''}>${s}</option>`).join('')}
-               </select>`
-            : (o.status||'');
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${new Date(o.assigned_at||o.created_at).toLocaleString('es-PY')}</td>
-            <td>${o.id}</td>
-            <td>${o.city||''}</td>
-            <td>${o.customer_name||''}</td>
-            <td class="right">${nf(o.total_gs)}</td>
-            <td class="right">${nf(fee)}</td>
-            <td class="right">${nf(neto)}</td>
-            <td>${s1Sel}</td>
-            <td>
-              ${badgeS2}
-              <select class="clo_s2" data-id="${o.id}">
-                <option value="">-- Elegir --</option>
-                <option value="DEVUELTO A DEPÓSITO">DEVUELTO A DEPÓSITO</option>
-                <option value="SALIÓ EN RUTA NUEVAMENTE">SALIÓ EN RUTA NUEVAMENTE</option>
-              </select>
-            </td>`;
-          tb.appendChild(tr);
+        const base = (rows||[]).filter(o=>{
+          const baseDate = o.assigned_at ? new Date(o.assigned_at) : (o.created_at? new Date(o.created_at): null);
+          if (!baseDate || baseDate<from || baseDate>to) return false;
+          if (dsel && String(o.assigned_delivery||'').toLowerCase()!==dsel) return false;
+          return true;
         });
 
-      tb.querySelectorAll('.clo_s1').forEach(sel=>{
-        sel.onchange=(e)=>{
-          const orderId = e.target.getAttribute('data-id');
-          const newS1   = e.target.value;
-          const tok=localStorage.getItem(tokenKey);
-          google.script.run
-            .withSuccessHandler(()=>{ toast('Estado 1 actualizado'); loadClosures(); refreshDashboard(); refreshWallet(); })
-            .withFailureHandler(err=>{ toast(err.message||err); loadClosures(); })
-            .updateOrderStatus(tok, orderId, newS1, '');
-        };
-      });
+        const tableRows = base.filter(o=>{ if (!type) return true; return String(o.status||'').toUpperCase()===type; });
 
-      tb.querySelectorAll('.clo_s2').forEach(sel=>{
-        sel.onchange=(e)=>{
-          const orderId = e.target.getAttribute('data-id');
-          const choice  = e.target.value;
-          if (!choice) return;
-          google.script.run
-            .withSuccessHandler(()=>{ toast('Estado 2 (cierre) guardado'); loadClosures(); })
-            .withFailureHandler(err=>{ toast(err.message||err); loadClosures(); })
-            .updateOrderStatus2(tok, orderId, choice);
-        };
-      });
-      markUpdated();
-    };
+        const delivered = base.filter(o=> String(o.status||'').toUpperCase()==='ENTREGADO');
+        const cnt = delivered.length;
+        let sumTotal=0, sumFee=0;
+        delivered.forEach(o=>{ sumTotal += Number(o.total_gs||0); sumFee   += getOrderFeeForDelivery(o); });
+        const net = sumTotal - sumFee;
 
-    if (Array.isArray(lastOrders) && lastOrders.length){
-      afterOrders(lastOrders);
-    } else {
-      google.script.run.withSuccessHandler(rows=>{ lastOrders=rows; afterOrders(rows); })
-        .withFailureHandler(e=>toast(e.message||e)).listOrders(tok);
+        const assignedToday = calculateAssignedToday(rows, f, t, dsel);
+
+        document.getElementById('cl_k_cnt').textContent = nf(cnt);
+        document.getElementById('cl_k_rev').textContent = nf(sumTotal);
+        document.getElementById('cl_k_fee').textContent = nf(sumFee);
+        document.getElementById('cl_k_net').textContent = nf(net);
+        document.getElementById('cl_k_assigned_today').textContent = nf(assignedToday);
+
+        const rendicionContainer = document.getElementById('rendicionBtnContainer');
+        if (me?.role === 'ADMIN') {
+          rendicionContainer.classList.remove('hidden');
+        } else {
+          rendicionContainer.classList.add('hidden');
+        }
+
+        const tb = document.getElementById('cl_tbody'); tb.innerHTML='';
+        const state1Opts = ['PENDIENTE','EN RUTA','ENTREGADO','ENCOMIENDA ENTREGADA','CANCELADO','REAGENDADO','NO CONTESTA','RECHAZADO','RECHAZADO EN EL LUGAR','NO DESEA','CANCELÓ POR WHATSAPP','DEVUELTO A DEPÓSITO'];
+
+        tableRows.sort((a,b)=> new Date(a.assigned_at||a.created_at) - new Date(b.assigned_at||b.created_at))
+          .forEach(o=>{
+            const fee = getOrderFeeForDelivery(o);
+            const neto = Number(o.total_gs||0) - fee;
+            const badgeS2 = o.status2 ? `<span class="badge">${o.status2}</span>` : '';
+            const s1Sel = (me?.role==='ADMIN')
+              ? `<select class="clo_s1" data-id="${o.id}">
+                  ${state1Opts.map(s=>`<option value="${s}" ${s===o.status?'selected':''}>${s}</option>`).join('')}
+                 </select>`
+              : (o.status||'');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${new Date(o.assigned_at||o.created_at).toLocaleString('es-PY')}</td>
+              <td>${o.id}</td>
+              <td>${o.city||''}</td>
+              <td>${o.customer_name||''}</td>
+              <td class="right">${nf(o.total_gs)}</td>
+              <td class="right">${nf(fee)}</td>
+              <td class="right">${nf(neto)}</td>
+              <td>${s1Sel}</td>
+              <td>
+                ${badgeS2}
+                <select class="clo_s2" data-id="${o.id}">
+                  <option value="">-- Elegir --</option>
+                  <option value="DEVUELTO A DEPÓSITO">DEVUELTO A DEPÓSITO</option>
+                  <option value="SALIÓ EN RUTA NUEVAMENTE">SALIÓ EN RUTA NUEVAMENTE</option>
+                </select>
+              </td>`;
+            tb.appendChild(tr);
+          });
+
+        tb.querySelectorAll('.clo_s1').forEach(sel=>{
+          sel.onchange=async (e)=>{
+            const orderId = e.target.getAttribute('data-id');
+            const newS1   = e.target.value;
+            const tok=localStorage.getItem(tokenKey);
+            try {
+              await callBackend('updateOrderStatus', { token: tok, id: orderId, status: newS1, obs: '' });
+              toast('Estado 1 actualizado'); 
+              await loadClosures(); 
+              await refreshDashboard(); 
+              await refreshWallet();
+            } catch (err) {
+              toast(err.message||err); 
+              await loadClosures();
+            }
+          };
+        });
+
+        tb.querySelectorAll('.clo_s2').forEach(sel=>{
+          sel.onchange=async (e)=>{
+            const orderId = e.target.getAttribute('data-id');
+            const choice  = e.target.value;
+            if (!choice) return;
+            try {
+              await callBackend('updateOrderStatus2', { token: tok, id: orderId, status2: choice });
+              toast('Estado 2 (cierre) guardado'); 
+              await loadClosures();
+            } catch (err) {
+              toast(err.message||err); 
+              await loadClosures();
+            }
+          };
+        });
+        markUpdated();
+      };
+
+      if (Array.isArray(lastOrders) && lastOrders.length){
+        await afterOrders(lastOrders);
+      } else {
+        const rows = await callBackend('listOrders', { token: tok });
+        lastOrders=rows; 
+        await afterOrders(rows);
+      }
+    } catch (e) {
+      toast(e.message||e);
     }
   }
 
-  // === NUEVO: Vista Pedidos con guías Pendientes (lógica)
+  // =========================
+  // Vista Pedidos con guías Pendientes - MODIFICADO para Vercel
+  // =========================
   function wirePendingGuidesSearch(){
     const q=document.getElementById('pg_q');
     if (!q) return;
@@ -2420,7 +2240,6 @@ Quiero coordinar la entrega de su pedido. Estos son los detalles:`;
 
   function isPendingGuideStatus(status2){
     const s = String(status2||'').trim().toUpperCase();
-    // Consideramos "pendiente" todo lo que NO sea exactamente 'GUIA GENERADA'
     return (s === '' || s === '--' || s !== 'GUIA GENERADA');
   }
 
@@ -2436,11 +2255,9 @@ Quiero coordinar la entrega de su pedido. Estos son los detalles:`;
     const t = tEl?.value ? new Date(tEl.value+'T23:59:59') : new Date('2999-12-31');
     const q = norm(qEl?.value||'');
 
-    // Filtramos: rango + búsqueda + "sin guía"
     const rows = (lastOrders||[]).filter(o=>{
       const d = new Date(o.created_at);
       if (d < f || d > t) return false;
-
       if (q){
         const idNum = String(o.id||'').replace(/^[a-z]+/i,'');
         const hay = [o.customer_name||'', o.phone||'', o.city||'', o.created_by||'', o.id||'', idNum].map(norm).join(' ');
@@ -2449,7 +2266,6 @@ Quiero coordinar la entrega de su pedido. Estos son los detalles:`;
       return isPendingGuideStatus(o.status2);
     });
 
-    // KPI
     const k = document.getElementById('pg_k_cnt');
     if (k) k.textContent = nf(rows.length);
 
@@ -2476,105 +2292,96 @@ Quiero coordinar la entrega de su pedido. Estos son los detalles:`;
       tb.appendChild(tr);
     });
 
-    // Manejo de cambios en Estado 2
     tb.querySelectorAll('.pg_s2').forEach(sel=>{
-      sel.onchange = (e)=>{
+      sel.onchange = async (e)=>{
         const id = e.target.getAttribute('data-id');
         const val = e.target.value;
         const tok = localStorage.getItem(tokenKey);
-        google.script.run
-          .withSuccessHandler(()=>{
-            // Actualizamos el objeto en memoria
-            const idx = (lastOrders||[]).findIndex(o=>String(o.id)===String(id));
-            if (idx>=0){ lastOrders[idx].status2 = val; }
-            // Si pasó a GUIA GENERADA, quitamos la fila y recalculamos KPI
-            renderPendingGuides();
-            toast('Estado 2 actualizado');
-          })
-          .withFailureHandler(err=>{
-            toast(err.message||err);
-            renderPendingGuides();
-          })
-          .updateOrderStatus2(tok, id, val);
+        try {
+          await callBackend('updateOrderStatus2', { token: tok, id: id, status2: val });
+          const idx = (lastOrders||[]).findIndex(o=>String(o.id)===String(id));
+          if (idx>=0){ lastOrders[idx].status2 = val; }
+          renderPendingGuides();
+          toast('Estado 2 actualizado');
+        } catch (err) {
+          toast(err.message||err);
+          renderPendingGuides();
+        }
       };
     });
   }
-  // === FIN NUEVO ===
 
-  /* ===================== NUEVO: PERFIL – funciones ===================== */
+  // =========================
+  // PERFIL - MODIFICADO para Vercel
+  // =========================
   function onOpenProfile(){
-    // precarga del email/nombre si ya hay sesión
     const em = me?.email || '';
     const nm = me?.name || '';
     if (document.getElementById('pf_email')) document.getElementById('pf_email').value = em;
     if (document.getElementById('pf_name') && !document.getElementById('pf_name').value) document.getElementById('pf_name').value = nm;
-
-    // === NUEVO: enganchar preview de foto ===
     wireProfilePhotoPreview();
-
     loadProfile();
   }
 
-  function loadProfile(){
-    const tok = localStorage.getItem(tokenKey);
-    google.script.run
-      .withSuccessHandler(p=>{
-        // p puede venir vacío si aún no guardaste nada
-        const v = p || {};
-        pf_name.value  = v.name || (me?.name||'');
-        pf_email.value = me?.email || '';
-        pf_phone.value = v.phone || '';
-        pf_doc.value   = v.doc || '';
-        pf_addr.value  = v.addr || '';
+  async function loadProfile(){
+    try {
+      const tok = localStorage.getItem(tokenKey);
+      const p = await callBackend('getMyProfile', { token: tok });
+      const v = p || {};
+      pf_name.value  = v.name || (me?.name||'');
+      pf_email.value = me?.email || '';
+      pf_phone.value = v.phone || '';
+      pf_doc.value   = v.doc || '';
+      pf_addr.value  = v.addr || '';
 
-        pf_bank_name.value   = v.bank_name || '';
-        pf_bank_type.value   = v.bank_type || '';
-        pf_bank_num.value    = v.bank_num || '';
-        pf_bank_holder.value = v.bank_holder || '';
-        pf_bank_holder_ci.value = v.bank_holder_ci || '';
+      pf_bank_name.value   = v.bank_name || '';
+      pf_bank_type.value   = v.bank_type || '';
+      pf_bank_num.value    = v.bank_num || '';
+      pf_bank_holder.value = v.bank_holder || '';
+      pf_bank_holder_ci.value = v.bank_holder_ci || '';
 
-        pf_wallet_provider.value = v.wallet_provider || '';
-        pf_wallet_number.value   = v.wallet_number || '';
-        pf_wallet_holder.value   = v.wallet_holder || '';
-      })
-      .withFailureHandler(()=>{/* solo preview */})
-      .getMyProfile?.(tok); // ← si aún no existe en GS, no rompe
+      pf_wallet_provider.value = v.wallet_provider || '';
+      pf_wallet_number.value   = v.wallet_number || '';
+      pf_wallet_holder.value   = v.wallet_holder || '';
+    } catch (e) {
+      // Silencioso - puede ser que el perfil no exista aún
+    }
   }
 
-  function saveProfile(){
-    const tok = localStorage.getItem(tokenKey);
-    const payload = {
-      name: pf_name.value.trim(),
-      email: pf_email.value.trim(),
-      phone: pf_phone.value.trim(),
-      doc: pf_doc.value.trim(),
-      addr: pf_addr.value.trim(),
-      bank_name: pf_bank_name.value.trim(),
-      bank_type: pf_bank_type.value.trim(),
-      bank_num: pf_bank_num.value.trim(),
-      bank_holder: pf_bank_holder.value.trim(),
-      bank_holder_ci: pf_bank_holder_ci.value.trim(),
-      wallet_provider: pf_wallet_provider.value.trim(),
-      wallet_number: pf_wallet_number.value.trim(),
-      wallet_holder: pf_wallet_holder.value.trim()
-    };
-    google.script.run
-      .withSuccessHandler(()=>{ toast('Perfil guardado'); })
-      .withFailureHandler(e=>{ toast(e.message||e); })
-      .saveMyProfile?.(tok, payload); // ← si aún no existe en GS, no rompe
+  async function saveProfile(){
+    try {
+      const tok = localStorage.getItem(tokenKey);
+      const payload = {
+        name: pf_name.value.trim(),
+        email: pf_email.value.trim(),
+        phone: pf_phone.value.trim(),
+        doc: pf_doc.value.trim(),
+        addr: pf_addr.value.trim(),
+        bank_name: pf_bank_name.value.trim(),
+        bank_type: pf_bank_type.value.trim(),
+        bank_num: pf_bank_num.value.trim(),
+        bank_holder: pf_bank_holder.value.trim(),
+        bank_holder_ci: pf_bank_holder_ci.value.trim(),
+        wallet_provider: pf_wallet_provider.value.trim(),
+        wallet_number: pf_wallet_number.value.trim(),
+        wallet_holder: pf_wallet_holder.value.trim()
+      };
+      await callBackend('saveMyProfile', { token: tok, data: payload });
+      toast('Perfil guardado');
+    } catch (e) {
+      toast(e.message||e);
+    }
   }
 
-  // === NUEVA FUNCIÓN: preview de foto local (no toca GS) ===
   function wireProfilePhotoPreview(){
     const file = document.getElementById('pf_file');
     const img  = document.getElementById('pf_avatar');
     if (!file || !img) return;
-    // Evitar duplicar listeners si vuelven a abrir la pestaña
     file.onchange = null;
     file.addEventListener('change', ()=>{
       const f = file.files && file.files[0];
       if (!f) return;
-      if (f.size > 2*1024*1024){ // 2MB
+      if (f.size > 2*1024*1024){
         toast('La imagen no debe superar 2MB');
         file.value = '';
         return;
@@ -2582,11 +2389,18 @@ Quiero coordinar la entrega de su pedido. Estos son los detalles:`;
       img.src = URL.createObjectURL(f);
     }, { once:false });
   }
-  /* ================== FIN PERFIL ================== */
 
+  // =========================
   // Autoinicio
+  // =========================
   (function boot(){
-    const saved = localStorage.getItem(emailKey)||''; if (saved){ try{ li_email.value=saved; li_saveemail.checked=true; }catch(e){} }
+    const saved = localStorage.getItem(emailKey)||''; 
+    if (saved){ 
+      try{ 
+        li_email.value=saved; 
+        li_saveemail.checked=true; 
+      }catch(e){} 
+    }
     init();
   })();
 </script>
