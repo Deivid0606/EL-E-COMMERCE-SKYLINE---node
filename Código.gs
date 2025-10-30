@@ -1356,5 +1356,130 @@ function saveMyProfile(token, data){
   }
   return { ok:true };
 }
+// =================================================================
+// ========== APIs REST PARA VERCEL (MANTIENE TODO LO EXISTENTE) ==========
+// =================================================================
 
+function doPost(e) {
+  try {
+    const data = JSON.parse(e.postData.contents);
+    const { action, params = {} } = data;
+    
+    // Log para debugging
+    console.log('API Call:', action, params);
+    
+    // Verificar autenticación para acciones protegidas
+    if (requiresAuth(action)) {
+      const userEmail = _sessionEmail(params.token);
+      if (!userEmail) {
+        return ContentService.createTextOutput(JSON.stringify({
+          success: false,
+          error: 'No autenticado'
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+    
+    // Ejecutar la función correspondiente
+    const result = executeFunction(action, params);
+    
+    return ContentService.createTextOutput(JSON.stringify({
+      success: true,
+      data: result
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (error) {
+    console.error('API Error:', error);
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      error: error.message
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
 
+function requiresAuth(action) {
+  const publicActions = [
+    'login', 
+    'register', 
+    'requestPasswordReset', 
+    'resetPasswordWithToken'
+  ];
+  return !publicActions.includes(action);
+}
+
+function executeFunction(action, params) {
+  // Mapeo completo de todas tus funciones
+  const functionMap = {
+    // Auth
+    'login': () => login(params.email, params.password, params.remember),
+    'register': () => register(params.name, params.email, params.password, params.role),
+    'me': () => me(params.token),
+    'listUsersByRole': () => listUsersByRole(params.token, params.role),
+    
+    // Products
+    'listProducts': () => listProducts(params.token),
+    'addProduct': () => addProduct(params.token, params.product),
+    
+    // Orders
+    'addOrder': () => addOrder(params.token, params.order),
+    'listOrders': () => listOrders(params.token),
+    'listOrdersFiltered': () => listOrdersFiltered(
+      params.token, params.fromISO, params.toISO, params.q, 
+      params.vendorEmailOpt, params.deliveryEmailOpt
+    ),
+    'updateOrderStatus': () => updateOrderStatus(params.token, params.id, params.status, params.obs),
+    'updateOrderStatus2': () => updateOrderStatus2(params.token, params.id, params.status2),
+    'assignDelivery': () => assignDelivery(params.token, params.id, params.deliveryEmail),
+    
+    // Wallet
+    'getWallet': () => getWallet(params.token, params.emailOpt),
+    
+    // Delivery Rates
+    'getDeliveryRates': () => getDeliveryRates(params.token, params.emailOpt),
+    'setDeliveryRate': () => setDeliveryRate(params.token, params.deliveryEmail, params.city, params.feeGs),
+    'getDeliveryClientPrices': () => getDeliveryClientPrices(params.token),
+    'setClientCityPrice': () => setClientCityPrice(params.token, params.city, params.price),
+    
+    // Metrics & News
+    'metrics': () => metrics(params.token, params.fromISO, params.toISO),
+    'listNews': () => listNews(params.token),
+    
+    // Guides
+    'getGuideText': () => getGuideText(params.token, params.orderId),
+    'generateGuidePDF': () => generateGuidePDF(params.token, params.orderId),
+    
+    // Admin
+    'adminGetOrderCounter': () => adminGetOrderCounter(params.token),
+    'adminSetOrderCounter': () => adminSetOrderCounter(params.token, params.num),
+    
+    // Password Reset
+    'requestPasswordReset': () => requestPasswordReset(params.email),
+    'resetPasswordWithToken': () => resetPasswordWithToken(params.token, params.newPass),
+    
+    // Commissions
+    'listCommissionsFlex': () => listCommissionsFlex(
+      params.token, params.fromISO, params.toISO, 
+      params.vendorEmailOpt, params.onlyStatus, params.q
+    ),
+    'payVendorCommission': () => payVendorCommission(params.token, params.orderId, params.paid),
+    'payVendorCommissionBulk': () => payVendorCommissionBulk(params.token, params.orderIds, params.paid),
+    
+    // Profiles
+    'getMyProfile': () => getMyProfile(params.token),
+    'saveMyProfile': () => saveMyProfile(params.token, params.data)
+  };
+  
+  if (functionMap[action]) {
+    return functionMap[action]();
+  } else {
+    throw new Error(`Función no implementada: ${action}`);
+  }
+}
+
+// Permite CORS para Vercel
+function doOptions() {
+  return ContentService.createTextOutput()
+    .setHeader('Access-Control-Allow-Origin', '*')
+    .setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+    .setHeader('Access-Control-Allow-Headers', 'Content-Type')
+    .setMimeType(ContentService.MimeType.JSON);
+}
