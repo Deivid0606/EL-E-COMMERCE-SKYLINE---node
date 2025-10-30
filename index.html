@@ -1,0 +1,2206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<base target="_top">
+<title>EL E-COMMERCE SKYLINE</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+<style>
+  :root{
+    --brand:#7c5cff; --bg:#0b0b10; --card:#141420; --text:#e9ebff; --muted:#9aa0b5;
+    --ok:#21c08b; --err:#ff5c7c;
+  }
+  *{ box-sizing:border-box }
+  body{ margin:0; font-family:Inter,system-ui,Segoe UI,Arial; background:var(--bg); color:var(--text); }
+
+  /* === Ancho completo (quitamos márgenes laterales oscuros) === */
+  .wrap{ max-width:100%; margin:0 auto; padding:20px 24px; }
+
+  .header{ display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px; }
+  .brand{ font-size:22px; font-weight:800; letter-spacing:.5px; display:flex; gap:12px; align-items:center; }
+  /* Logo un toque más grande y redondeado */
+  .brand img{ width:40px; height:40px; border-radius:10px; object-fit:cover; }
+
+  .row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  
+  /* === PANELES (CARDS) MEJORADOS === */
+  .card {
+    background: var(--card);
+    border: 1px solid #2a2a40;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--brand), #9d8aff);
+    opacity: 0.7;
+  }
+
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    border-color: #3a3a55;
+  }
+  
+  nav .btn{ border:0; background:#1d1d2a; color:#fff; border-radius:10px; padding:10px 14px; font-weight:700; cursor:pointer; }
+  nav .btn.primary{ background:var(--brand) }
+  
+  /* === MEJORAS EN INPUTS === */
+  input,select,textarea{
+    width:100%; 
+    padding:10px 14px; 
+    border-radius:10px; 
+    border:1px solid #353552; 
+    background:#0e0e16; 
+    color:#fff; 
+    outline:none; 
+    transition: all 0.2s ease;
+  }
+  
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 2px rgba(124, 92, 255, 0.2);
+  }
+  
+  label{ font-size:12px; color:var(--muted); margin-top:8px; display:block; }
+  
+  /* === MEJORAS EN TABLAS === */
+  table{ 
+    width:100%; 
+    border-collapse: separate; 
+    border-spacing: 0; 
+    font-size:14px; 
+  } 
+  
+  th,td{ 
+    padding:12px; 
+    border-bottom:1px solid #2a2a3a; 
+    text-align:left; 
+  }
+  
+  th {
+    background: rgba(30, 30, 45, 0.6);
+    font-weight: 700;
+    color: #c8d0ff;
+  }
+
+  tr:hover td {
+    background: rgba(40, 40, 60, 0.3);
+  }
+  
+  .right{ text-align:right } .hidden{ display:none }
+  
+  /* === KPI MEJORADOS === */
+  .kpi {
+    background: linear-gradient(145deg, #151528, #1a1a2e);
+    border: 1px solid #2a2a40;
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .kpi::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--brand), #9d8aff);
+    opacity: 0.7;
+  }
+
+  .kpi:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    border-color: #3a3a55;
+  }
+  
+  .kpi-title{font-size:12px;color:#aab; margin-bottom: 6px;}
+  .kpi-value{font-weight:800;font-size:22px; color: var(--text);}
+  
+  .grid-5{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+  @media (max-width:1000px){ .grid-5{grid-template-columns:repeat(2,1fr);} }
+  .thumb{ width:64px; height:64px; object-fit:cover; border-radius:8px; border:1px solid #2c2f4a; }
+  
+  /* === CHIPS Y BADGES MEJORADOS === */
+  .chip {
+    background: linear-gradient(135deg, #252538, #2d2d45);
+    color: #d0e1ff;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid #353552;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .badge{ 
+    padding:4px 10px; 
+    border-radius:8px; 
+    font-size:11px; 
+    background: linear-gradient(135deg, #252538, #2d2d45);
+    color: #d0e1ff;
+    font-weight: 600;
+    border: 1px solid #353552;
+  }
+  
+  .ok{color:var(--ok)} .err{color:var(--err)}
+  
+  /* === MEJORAS EN MODALES === */
+  .modal{ 
+    position:fixed; 
+    inset:0; 
+    background:rgba(0,0,0,.6); 
+    display:none; 
+    align-items:center; 
+    justify-content:center; 
+    padding:20px; 
+  }
+  
+  .modal .box{ 
+    background:#0f1120; 
+    border:1px solid #2a2a40; 
+    border-radius:16px; 
+    padding:20px; 
+    width:min(900px,95vw); 
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  }
+  
+  /* === BOTONES MEJORADOS === */
+  .btn {
+    border: 0;
+    background: linear-gradient(135deg, var(--brand), #6a4dff);
+    color: #fff;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(124, 92, 255, 0.3);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+  }
+
+  .btn:hover::before {
+    left: 100%;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(124, 92, 255, 0.4);
+  }
+
+  .btn:active {
+    transform: translateY(0);
+  }
+
+  .btn.primary {
+    background: linear-gradient(135deg, var(--brand), #6a4dff);
+    box-shadow: 0 2px 8px rgba(124, 92, 255, 0.4);
+  }
+
+  .btn.small{ 
+    padding:6px 12px; 
+    border-radius:8px; 
+    font-size:12px; 
+  }
+
+  .btn.refreshBtn {
+    background: #252538;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  }
+
+  .btn.refreshBtn:hover {
+    background: #2d2d45;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Tabla pedidos: más legible y ancha */
+  #tblOrders { min-width: 1400px; }
+  #tblOrders th, #tblOrders td { white-space: nowrap; font-size: 13px; }
+  #tblOrders select { min-width: 120px; padding: 4px 6px; border-radius: 6px; background:#1d1d2a; color:#fff; }
+
+  /* Charts estables */
+  #chartBars, #chartPie, #chartGuideGen, #chartGuidePend { max-height: 260px; }
+
+  /* Refresco */
+  .refreshBox small{ color:var(--muted); }
+
+  /* ===================================================== */
+  /* === NUEVO: Cards de PRODUCTOS + Toolbar + Modal ==== */
+  /* ===================================================== */
+  .prod-toolbar{ display:flex; gap:10px; align-items:center; margin:8px 0 14px; flex-wrap:wrap; }
+  .prod-toolbar .search{ min-width:260px; flex:1; }
+  .prod-toolbar .tog{ background:#1d1d2a; color:#fff; border-radius:8px; padding:6px 10px; cursor:pointer; border:1px solid #2b2d45; }
+
+  .prod-grid{ 
+    display:grid; grid-template-columns:repeat(6,1fr); gap:12px;
+  }
+  @media (max-width:1500px){ .prod-grid{ grid-template-columns:repeat(5,1fr); } }
+  @media (max-width:1200px){ .prod-grid{ grid-template-columns:repeat(4,1fr); } }
+  @media (max-width:900px){  .prod-grid{ grid-template-columns:repeat(3,1fr); } }
+  @media (max-width:680px){  .prod-grid{ grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:460px){  .prod-grid{ grid-template-columns:repeat(1,1fr); } }
+
+  /* === TARJETAS DE PRODUCTOS MEJORADAS === */
+  .prod-card{
+    background: #151528;
+    border: 1px solid #2a2a40;
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.25s ease;
+    position: relative;
+  }
+
+  .prod-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--brand), #9d8aff);
+    opacity: 0.8;
+  }
+
+  .prod-card:hover{
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,.3);
+    border-color: #3a3a55;
+  }
+
+  .prod-img{ 
+    width:100%; 
+    aspect-ratio: 1.2 / 1; 
+    object-fit:cover; 
+    background:#0e0e16; 
+    transition: transform 0.3s ease;
+  }
+  
+  .prod-card:hover .prod-img {
+    transform: scale(1.03);
+  }
+  
+  .prod-body{ 
+    padding:14px; 
+    display:flex; 
+    gap:8px; 
+    flex-direction:column; 
+    flex-grow: 1;
+  }
+  .prod-title{ font-weight:700; font-size:14px; line-height:1.3; color: var(--text); }
+  .prod-meta{ display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-top: auto; }
+  .prod-foot{ 
+    display:flex; 
+    justify-content:space-between; 
+    align-items:center; 
+    padding:12px 14px; 
+    border-top:1px solid #252538; 
+    background: rgba(20, 20, 32, 0.6);
+  }
+  .muted{ color:var(--muted); font-size:12px; }
+
+  /* Modal de detalle de producto */
+  #productModal .box{ width:min(720px,95vw); }
+  .pm-head{ display:flex; gap:14px; }
+  .pm-img{ width:220px; height:220px; border-radius:12px; object-fit:cover; border:1px solid #2a2a3a; background:#0e0e16; }
+  .pm-info{ flex:1; min-width:220px; }
+  .pm-row{ display:flex; gap:10px; flex-wrap:wrap; }
+  .pm-k{ font-size:12px; color:#aab; }
+  .pm-v{ font-weight:800; }
+
+  /* === NUEVO: ocultar col "Estado 2 (cierre)" en Cierres solo con CSS === */
+  #tblClosures th:last-child,
+  #tblClosures td:last-child {
+    display: none;
+  }
+
+  /* ========== NUEVO: estilos livianos para PERFIL (no rompe nada) ========== */
+  .grid-2 { display:grid; grid-template-columns: 1fr 1fr; gap:14px; }
+  @media (max-width:900px){ .grid-2 { grid-template-columns: 1fr; } }
+  .box-title{ font-weight:800; margin-bottom:6px; }
+  .note{ font-size:12px; color:var(--muted); }
+
+  /* === NUEVO: avatar circular para Perfil === */
+  .photo{ width:88px; height:88px; border-radius:50%; object-fit:cover; border:2px solid #222235; background:#0e0e16; }
+
+  /* === MEJORAS DE VELOCIDAD VISUAL === */
+  /* Transiciones más rápidas para mejor respuesta */
+  .card, .prod-card, .btn, .kpi {
+    transition-duration: 0.2s;
+  }
+
+  /* Optimización para dispositivos táctiles */
+  @media (hover: none) {
+    .card:hover, .prod-card:hover, .btn:hover, .kpi:hover {
+      transform: none;
+    }
+  }
+
+  /* Mejora en la legibilidad de textos */
+  .prod-title, .kpi-value, .btn {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  
+  /* === NUEVO: Estilos para el botón de rendición === */
+  .rendicion-btn {
+    margin-top: 12px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    text-align: center;
+  }
+  
+  .rendicion-btn.pendiente {
+    background: linear-gradient(135deg, #ff5c7c, #ff3b6d);
+  }
+  
+  .rendicion-btn.rendido {
+    background: linear-gradient(135deg, #21c08b, #1aad7c);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="brand">
+      <!-- Logo más grande -->
+      <img src="https://cdn.shopify.com/s/files/1/0885/3012/5095/files/LOGO_SKY_BLACK.jpg?v=1757835485" alt="Skyline" />
+      EL E-COMMERCE SKYLINE
+      <span class="chip">Sheets DB</span>
+    </div>
+    <div class="row" style="gap:12px;">
+      <!-- Sello de última actualización + botón refrescar -->
+      <div class="row refreshBox" id="refreshBox" style="gap:8px;">
+        <small>Última actualización: <span id="lastUpdateText">—</span></small>
+        <button class="btn small refreshBtn" title="Actualizar" onclick="softRefresh()">↻</button>
+      </div>
+      <div id="userBox" class="row"></div>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <nav class="row" style="margin-bottom:12px;">
+    <button id="navLogin" class="btn primary" onclick="openLogin()">Login</button>
+    <button id="navDash"  class="btn hidden" onclick="show('dashboard')">Dashboard</button>
+    <button id="navNews"  class="btn hidden" onclick="show('news')">Novedades</button>
+
+    <!-- === NUEVO: pestaña Pedidos con guías (solo ADMIN / DESPACHANTE) === -->
+    <button id="navWithGuides" class="btn hidden" onclick="show('withGuides')">Pedidos con guías</button>
+
+    <button id="navProd"  class="btn hidden" onclick="show('products')">Productos</button>
+    <button id="navOrder" class="btn hidden" onclick="show('order')">Cargar pedido</button>
+    <button id="navOrders"class="btn hidden" onclick="show('orders')">Pedidos</button>
+    <button id="navRates" class="btn hidden" onclick="show('rates')">Costos delivery</button>
+    <button id="navWallet"class="btn hidden" onclick="show('wallet')">Wallet</button>
+    <button id="navComms" class="btn hidden" onclick="show('commissions')">Pago de comisiones</button>
+    <button id="navCounter" class="btn hidden" onclick="show('counter')">Actualizar contador</button>
+    <button id="navClosures" class="btn hidden" onclick="show('closures')">Cierres</button>
+
+    <!-- ========= NUEVO: botón PERFIL (todos los roles) ========= -->
+    <button id="navProfile" class="btn hidden" onclick="show('profile'); onOpenProfile()">Perfil</button>
+
+    <span class="chip" id="roleChip"></span>
+  </nav>
+
+  <!-- 🔐 Login/Register -->
+  <section id="view-auth" class="card">
+    <div class="row" style="gap:16px;">
+      <div style="flex:1; min-width:320px;">
+        <h3>Ingresar</h3>
+        <label>Email</label><input id="li_email">
+        <label>Contraseña</label><input id="li_pass" type="password">
+        <div class="row" style="gap:14px; margin-top:6px;">
+          <label style="display:flex;align-items:center;gap:6px;"><input type="checkbox" id="li_remember"> Mantener sesión (30 días)</label>
+          <label style="display:flex;align-items:center;gap:6px;"><input type="checkbox" id="li_saveemail"> Recordar email</label>
+        </div>
+        <div class="row" style="margin-top:10px;">
+          <button class="btn primary" onclick="onLogin()">Entrar</button>
+        </div>
+        <div class="row" style="margin-top:8px;">
+          <button class="btn small" style="background:#1d1d2a" onclick="openResetRequest()">¿No recuerdo mi contraseña?</button>
+        </div>
+      </div>
+      <div style="flex:1; min-width:320px;">
+        <h3>Crear cuenta</h3>
+        <label>Nombre</label><input id="re_name">
+        <label>Email</label><input id="re_email">
+        <label>Contraseña</label><input id="re_pass" type="password">
+        <label>Rol</label>
+        <select id="re_role">
+          <option value="VENDEDOR">VENDEDOR</option>
+          <option value="DELIVERY">DELIVERY</option>
+          <option value="DESPACHANTE">DESPACHANTE</option>
+          <option value="ADMIN">ADMIN</option>
+        </select>
+        <small>⚡ El primer usuario creado será ADMIN automáticamente.</small>
+        <div class="row" style="margin-top:10px;"><button class="btn" onclick="onRegister()">Registrarme</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 📊 Dashboard -->
+  <section id="view-dashboard" class="hidden">
+    <div class="card">
+      <h3>Dashboard</h3>
+      <div class="row" id="dashFilters" style="gap:8px;margin-bottom:10px%;">
+        <label>Desde</label><input id="dash_from" type="date">
+        <label>Hasta</label><input id="dash_to" type="date">
+        <button class="btn" onclick="refreshDashboard()">Aplicar</button>
+      </div>
+      <div class="grid-5">
+        <div class="kpi"><div class="kpi-title">Pedidos</div><div id="kpi_orders" class="kpi-value">0</div></div>
+        <div class="kpi"><div class="kpi-title">Total vendido (Gs)</div><div id="kpi_sold" class="kpi-value">0</div></div>
+        <div class="kpi"><div class="kpi-title">Entregados</div><div id="kpi_delivered" class="kpi-value">0</div></div>
+        <div class="kpi"><div class="kpi-title">Cancelados</div><div id="kpi_canceled" class="kpi-value">0</div></div>
+        <div class="kpi"><div class="kpi-title" id="kpi5_title">Utilidad Total (Gs)</div><div id="kpi_profit" class="kpi-value">0</div></div>
+      </div>
+      <div id="kpiSumEntregadoRow" class="row hidden" style="gap:16px; margin-top:12px;">
+        <div class="kpi"><div class="kpi-title">Suma total ENTREGADO (Gs)</div><div id="kpi_sum_entregado" class="kpi-value">0</div></div>
+      </div>
+      <div class="row" style="gap:16px; margin-top:16px;">
+        <div class="card" style="flex:2; min-height:260px;"><canvas id="chartBars"></canvas></div>
+        <div class="card" style="flex:1; min-height:260px;"><canvas id="chartPie"></canvas></div>
+      </div>
+      <div id="guideBlocks" class="hidden">
+        <div class="row" style="gap:16px; margin-top:16px;">
+          <div class="kpi"><div class="kpi-title">Guías generadas</div><div id="kpi_guides_gen" class="kpi-value">0</div></div>
+          <div class="kpi"><div class="kpi-title">Guías pendientes</div><div id="kpi_guides_pend" class="kpi-value">0</div></div>
+        </div>
+        <div class="row" style="gap:16px; margin-top:16px;">
+          <div class="card" style="flex:1; min-height:240px;"><h4>Guías generadas por día</h4><canvas id="chartGuideGen"></canvas></div>
+          <div class="card" style="flex:1; min-height:240px;"><h4>Guías pendientes por día</h4><canvas id="chartGuidePend"></canvas></div>
+        </div>
+      </div>
+      <div class="row" style="gap:16px; margin-top:16px;">
+        <div class="card" style="flex:1; min-width:300px;"><h4>Top productos</h4><ul id="topList"></ul></div>
+        <div class="card" style="flex:1; min-width:300px;"><h4>Ciudades (ventas)</h4><ul id="mapList"></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 📰 Novedades -->
+  <section id="view-news" class="hidden">
+    <div class="card">
+      <h3>Novedades</h3>
+      <table><thead><tr><th>Fecha</th><th>Pedido</th><th>Tipo</th><th>Nota</th></tr></thead>
+      <tbody id="news_tbody"></tbody></table>
+    </div>
+  </section>
+
+  <!-- 🛍️ Productos -->
+  <section id="view-products" class="hidden">
+    <div class="card">
+      <div class="row" style="justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <h3>Catálogo</h3>
+        <button id="btnAddProduct" class="btn hidden" onclick="openAddProduct()">+ Agregar producto</button>
+      </div>
+
+      <!-- === NUEVO: Toolbar de productos (búsqueda / toggle) === -->
+      <div class="prod-toolbar">
+        <input id="prod_q" class="search" placeholder="🔎 Buscar por título, SKU…">
+        <button id="prod_toggle_table" class="tog" onclick="toggleProdTable()">Mostrar tabla</button>
+      </div>
+
+      <!-- === NUEVO: Grilla de cards === -->
+      <div id="prodGrid" class="prod-grid"></div>
+
+      <!-- (se mantiene la TABLA original, por si querés verla; por defecto oculta) -->
+      <div id="prodTableWrap" class="hidden" style="overflow:auto; margin-top:14px;">
+        <table id="tblProducts">
+          <thead><tr><th></th><th>Título</th><th>SKU</th><th class="right">Proveedor (Gs)</th><th class="right">Stock</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <!-- NUEVO: Modal de detalle de producto -->
+      <div id="productModal" class="modal">
+        <div class="box">
+          <div class="row" style="justify-content:space-between; align-items:center;">
+            <h3>Detalle de producto</h3>
+            <button class="btn" onclick="closeProductModal()">Cerrar</button>
+          </div>
+          <div class="pm-head" style="margin-top:8px;">
+            <img id="pm_img" class="pm-img" src="" alt="Producto" onerror="this.src='https://via.placeholder.com/220x220?text=No+image'">
+            <div class="pm-info">
+              <div class="prod-title" id="pm_title">—</div>
+              <div class="pm-row" style="margin-top:8px;">
+                <div><div class="pm-k">SKU</div><div class="pm-v" id="pm_sku">—</div></div>
+                <div><div class="pm-k">Proveedor (Gs)</div><div class="pm-v" id="pm_provider">0</div></div>
+                <div><div class="pm-k">Stock</div><div class="pm-v" id="pm_stock">0</div></div>
+              </div>
+              <div class="muted" style="margin-top:8px;">* Estos son los datos actuales en tu catálogo.</div>
+            </div>
+          </div>
+          <hr style="border:0;border-top:1px solid #2a2a3a; margin:14px 0;">
+          <div>
+            <label>Notas internas (opcional)</label>
+            <textarea id="pm_notes" rows="3" placeholder="Anotá referencias, proveedor alternativo, costos logísticos, etc. (local; no se guarda aún)"></textarea>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <button class="btn" onclick="closeProductModal()">Listo</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form agregar producto (se mantiene tal cual) -->
+      <div id="addProductBox" class="hidden" style="margin-top:12px;">
+        <div class="row" style="gap:10px;">
+          <input id="np_title" placeholder="Título">
+          <input id="np_sku" placeholder="SKU">
+          <input id="np_price" type="number" placeholder="Proveedor (Gs)">
+          <input id="np_stock" type="number" placeholder="Stock">
+          <input id="np_img" placeholder="Imagen URL">
+        </div>
+        <div class="row" style="gap:10px; margin-top:8px;">
+          <input id="np_private" placeholder="Producto privado (emails separados por coma) — opcional">
+          <button class="btn" onclick="saveNewProduct()">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 📝 Cargar pedido -->
+  <section id="view-order" class="hidden">
+    <div class="card">
+      <h3>Cargar pedido</h3>
+      <div class="row" style="gap:16px;">
+        <div style="flex:1; min-width:320px;">
+          <label>Cliente</label><input id="o_customer">
+          <label>Teléfono</label><input id="o_phone">
+          <label>Ciudad</label>
+          <select id="o_city" onchange="recalcOrder"></select>
+          <div class="row"><span class="chip" id="cityHint"></span></div>
+          <label>Calle</label><input id="o_street">
+          <label>Barrio</label><input id="o_district">
+          <label>Email</label><input id="o_email" placeholder="Opcional">
+          <label>Observación</label><textarea id="o_obs" rows="2"></textarea>
+        </div>
+        <div style="flex:2; min-width:420px;">
+          <label>Items</label>
+          <div id="itemsBox"></div>
+          <div class="row" style="margin-top:8px;">
+            <button class="btn" onclick="addItemRow()">+ Agregar ítem</button>
+            <span id="catalogStatus" class="chip">Cargando catálogo...</span>
+          </div>
+          <div class="row" style="margin-top:12px;">
+            <div style="flex:1;"><label>Total (Gs)</label><input id="o_total" readonly></div>
+            <div style="flex:1;"><label>Delivery cobrado (Gs)</label><input id="o_delivery" readonly></div>
+            <div style="flex:1;"><label>Comisión estimada (Gs)</label><input id="o_commission" readonly></div>
+          </div>
+          <div class="row" style="margin-top:12px;"><button class="btn" onclick="saveOrder()">Guardar pedido</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 📦 Pedidos -->
+  <section id="view-orders" class="hidden">
+    <div class="card">
+      <div class="row" id="ordersFilters" style="gap:12px; margin-bottom:10px;">
+        <label>Desde</label><input id="of_from" type="date">
+        <label>Hasta</label><input id="of_to" type="date">
+        <div class="row" style="flex:1; min-width:360px;">
+          <input id="orderSearch" class="search" placeholder="🔎 Buscar por cliente, teléfono, ID o ciudad" style="flex:1;">
+          <button class="btn small" onclick="renderOrdersLast()">Filtrar</button>
+        </div>
+      </div>
+      <div style="overflow:auto;">
+        <table id="tblOrders">
+          <thead>
+            <tr>
+              <th>Fecha</th><th>ID</th><th>Ciudad</th><th>Cliente</th><th>Vendedor</th><th>Delivery asignado</th>
+              <th class="right">Total (Gs)</th>
+              <th class="right" id="th_comm">Monto a comisionar / Tarifa (Gs)</th>
+              <th>Estado 1</th><th>Estado 2 (ADMIN/DESP)</th><th>Asignar Delivery</th><th>Guía</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 🚚 Costos delivery -->
+  <section id="view-rates" class="hidden">
+    <div class="card">
+      <h3>Costos de delivery por ciudad</h3>
+
+      <div id="ratesAdminBox" class="hidden" style="margin-bottom:8px;">
+        <div class="row" style="gap:10px;">
+          <input id="dr_email" placeholder="delivery@email.com">
+          <input id="dr_city"  placeholder="Ciudad">
+          <input id="dr_rate"  type="number" placeholder="Tarifa (Gs)">
+          <button class="btn" onclick="saveRate()">Guardar/Actualizar</button>
+        </div>
+      </div>
+
+      <table><thead><tr><th>Email</th><th>Ciudad</th><th class="right">Tarifa (Gs)</th></tr></thead>
+      <tbody id="rates_tbody"></tbody></table>
+
+      <hr style="border:0;border-top:1px solid #2a2a3a;margin:16px 0;">
+
+      <h3 style="margin-top:0;">Precio al cliente por ciudad</h3>
+      <div id="clientPricesAdminBox" class="hidden" style="margin-bottom:8px;">
+        <div class="row" style="gap:10px;">
+          <input id="cp_city"  placeholder="Ciudad">
+          <input id="cp_price" type="number" placeholder="Precio al cliente (Gs)">
+          <button class="btn" onclick="saveClientPrice()">Guardar/Actualizar</button>
+        </div>
+        <small class="badge">Impacta en el formulario de pedido (Delivery cobrado).</small>
+      </div>
+      <table><thead><tr><th>Ciudad</th><th class="right">Precio cliente (Gs)</th></tr></thead>
+      <tbody id="client_prices_tbody"></tbody></table>
+    </div>
+  </section>
+
+  <!-- 👛 Wallet -->
+  <section id="view-wallet" class="hidden">
+    <div class="card">
+      <h3>Wallet</h3>
+      <div class="grid-5">
+        <div class="kpi"><div class="kpi-title">Saldo</div><div id="w_balance" class="kpi-value">0</div></div>
+      </div>
+      <table style="margin-top:12px;"><thead><tr><th>Fecha</th><th>Tipo</th><th>Pedido</th><th class="right">Monto (Gs)</th><th>Nota</th></tr></thead>
+        <tbody id="wallet_tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 💸 Pago de comisiones (ADMIN) -->
+  <section id="view-commissions" class="hidden">
+    <div class="card">
+      <h3>Pago de comisiones</h3>
+      <div class="row" style="gap:10px; margin-bottom:10px;">
+        <label>Desde</label><input id="pc_from" type="date">
+        <label>Hasta</label><input id="pc_to" type="date">
+        <input id="pc_vendor" placeholder="Filtrar por email del vendedor (opcional)" style="min-width:300px;">
+        <select id="pc_only" style="width:auto; min-width:160px;">
+          <option value="">Todos</option>
+          <option value="PENDIENTE">Pendiente</option>
+          <option value="PAGADO">Pagado</option>
+        </select>
+        <input id="pc_q" placeholder="🔎 Buscar por cliente, teléfono o ID" style="min-width:300px;">
+        <button class="btn" onclick="loadCommissions()">Aplicar</button>
+      </div>
+      <div class="row" style="margin:6px 0 12px;">
+        <button class="btn small" onclick="markAllCommissionsPaid()">Marcar todos como PAGADO (vista actual)</button>
+      </div>
+
+      <!-- === NUEVO: KPIs de Pago de comisiones (NO TOCAR NADA MÁS) === -->
+      <div class="grid-5" style="margin:10px 0 12px;">
+        <div class="kpi">
+          <div class="kpi-title">Pedidos filtrados</div>
+          <div id="pc_k_cnt" class="kpi-value">0</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-title">Suma Monto a comisionar (Gs)</div>
+          <div id="pc_k_sum" class="kpi-value">0</div>
+        </div>
+      </div>
+      <!-- === FIN NUEVO === -->
+
+      <div style="overflow:auto;">
+        <table id="tblComms">
+          <thead>
+            <tr>
+              <th>Fecha</th><th>ID</th><th>Ciudad</th><th>Cliente</th><th>Vendedor</th><th>Delivery asignado</th>
+              <th class="right">Total (Gs)</th><th class="right">Monto a comisionar (Gs)</th>
+              <th>Estado 1</th><th>Pago comisión</th><th>Guía</th>
+            </tr>
+          </thead>
+          <tbody id="comms_tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 🔢 Actualizar Contador -->
+  <section id="view-counter" class="hidden">
+    <div class="card">
+      <h3>Actualizar Contador de Órdenes</h3>
+      <div class="row" style="gap:10px; margin-bottom:10px;">
+        <span class="chip">Prefijo: <b id="seq_prefix"></b></span>
+        <span class="chip">Padding: <b id="seq_pad"></b></span>
+        <span class="chip">Contador actual: <b id="seq_value"></b></span>
+      </div>
+      <div class="row" style="gap:10px;">
+        <input id="seq_new" type="number" placeholder="Nuevo contador (ej. 356)">
+        <button class="btn" onclick="setSeq()">Guardar contador</button>
+      </div>
+      <small class="badge">Ejemplo: si pones 356, el próximo ID será A357</small>
+    </div>
+  </section>
+
+  <!-- ✅ Cierres -->
+  <section id="view-closures" class="hidden">
+    <div class="card">
+      <h3>Cierres de Repartidores</h3>
+
+      <div class="row" style="gap:10px; margin-bottom:10px;">
+        <label>Desde (asignado)</label><input id="cl_from" type="date">
+        <label>Hasta</label><input id="cl_to" type="date">
+        <select id="cl_delivery" style="min-width:280px;">
+          <option value="">Todos los repartidores</option>
+        </select>
+        <select id="cl_type" style="min-width:220px;">
+          <option value="">Todos los tipos (Estado 1)</option>
+          <option value="ENTREGADO" selected>ENTREGADO</option>
+          <option value="ENCOMIENDA ENTREGADA">ENCOMIENDA ENTREGADA</option>
+          <option value="EN RUTA">EN RUTA</option>
+          <option value="PENDIENTE">PENDIENTE</option>
+          <option value="REAGENDADO">REAGENDADO</option>
+          <option value="NO CONTESTA">NO CONTESTA</option>
+          <option value="RECHAZADO">RECHAZADO</option>
+          <option value="RECHAZADO EN EL LUGAR">RECHAZADO EN EL LUGAR</option>
+          <option value="CANCELADO">CANCELADO</option>
+          <option value="NO DESEA">NO DESEA</option>
+          <option value="CANCELÓ POR WHATSAPP">CANCELÓ POR WHATSAPP</option>
+          <option value="DEVUELTO A DEPÓSITO">DEVUELTO A DEPÓSITO</option>
+        </select>
+        <button class="btn" onclick="loadClosures()">Aplicar</button>
+      </div>
+
+      <small class="badge">Los KPIs se calculan <b>solo</b> con Estado 1 = <b>ENTREGADO</b>.</small>
+
+      <!-- === NUEVO: KPI de pedidos asignados en el día === -->
+      <div class="grid-5" style="margin:10px 0 12px;">
+        <div class="kpi"><div class="kpi-title">Pedidos ENTREGADOS</div><div id="cl_k_cnt" class="kpi-value">0</div></div>
+        <div class="kpi"><div class="kpi-title">Recaudado ENTREGADOS (Gs)</div><div id="cl_k_rev" class="kpi-value">0</div></div>
+        <div class="kpi"><div class="kpi-title">Ganancia Delivery (Gs)</div><div id="cl_k_fee" class="kpi-value">0</div></div>
+        <div class="kpi"><div class="kpi-title">Neto a Rendir (Gs)</div><div id="cl_k_net" class="kpi-value">0</div></div>
+        <div class="kpi"><div class="kpi-title">Pedidos asignados hoy</div><div id="cl_k_assigned_today" class="kpi-value">0</div></div>
+      </div>
+
+      <!-- === NUEVO: Botón de rendición === -->
+      <div id="rendicionBtnContainer" class="hidden">
+        <button id="rendicionBtn" class="rendicion-btn pendiente" onclick="toggleRendicion()">PENDIENTE DE RENDIR</button>
+      </div>
+
+      <div style="overflow:auto;">
+        <table id="tblClosures" style="min-width:1100px;">
+          <thead>
+            <tr>
+              <th>Asignado</th><th>ID</th><th>Ciudad</th><th>Cliente</th>
+              <th class="right">Total (Gs)</th><th class="right">Tarifa (Gs)</th><th class="right">Neto (Gs)</th>
+              <th>Estado 1</th><th>Estado 2 (cierre)</th>
+            </tr>
+          </thead>
+          <tbody id="cl_tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- === NUEVO: Vista Pedidos con guías (KPI + tabla pedida) === -->
+  <section id="view-withGuides" class="hidden">
+    <div class="card">
+      <h3>Pedidos con guías</h3>
+      <!-- KPI de guías pendientes -->
+      <div class="grid-5" style="margin:6px 0 10px;">
+        <div class="kpi">
+          <div class="kpi-title">Guías pendientes</div>
+          <div id="pg_k_cnt" class="kpi-value">0</div>
+        </div>
+      </div>
+      <!-- Filtros livianos -->
+      <div class="row" style="gap:12px; margin-bottom:10px;">
+        <label>Desde</label><input id="pg_from" type="date">
+        <label>Hasta</label><input id="pg_to" type="date">
+        <div class="row" style="flex:1; min-width:320px;">
+          <input id="pg_q" class="search" placeholder="🔎 Buscar por cliente, teléfono, ID o ciudad" style="flex:1;">
+          <button class="btn small" onclick="renderPendingGuides()">Filtrar</button>
+        </div>
+      </div>
+      <div style="overflow:auto;">
+        <table id="tblPendingGuides" style="min-width:1100px;">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>ID</th>
+              <th>Ciudad</th>
+              <th>Cliente</th>
+              <th>Vendedor</th>
+              <th>Estado 2 (ADMIN/DESP)</th>
+              <th>Guía</th>
+            </tr>
+          </thead>
+          <tbody id="pg_tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+  <!-- === FIN NUEVO === -->
+
+  <!-- ========= NUEVO: PERFIL (todos los roles) ========= -->
+  <section id="view-profile" class="hidden">
+    <div class="card">
+      <h3>Perfil</h3>
+      <div class="note">Estos datos se usan para contacto y para <b>pago de comisiones</b>.</div>
+
+      <div class="grid-2" style="margin-top:12px;">
+        <!-- Datos personales -->
+        <div class="card" style="flex:1;">
+          <div class="box-title">Datos personales</div>
+
+          <!-- === NUEVO: Foto de perfil (preview local) === -->
+          <div class="row" style="gap:12px; align-items:flex-start; margin-bottom:8px;">
+            <img id="pf_avatar" class="photo" src="https://via.placeholder.com/88x88?text=Foto" alt="Foto de perfil">
+            <div>
+              <label>Foto</label>
+              <input id="pf_file" type="file" accept="image/*">
+              <div class="muted">Formato JPG/PNG, máx. 2MB.</div>
+            </div>
+          </div>
+          <!-- === FIN NUEVO === -->
+
+          <label>Nombre</label><input id="pf_name" placeholder="Tu nombre">
+          <label>Email (de sesión)</label><input id="pf_email" readonly>
+          <label>Teléfono</label><input id="pf_phone" placeholder="+595...">
+          <label>Documento (CI/RUC)</label><input id="pf_doc" placeholder="CI o RUC">
+          <label>Dirección</label><input id="pf_addr" placeholder="Calle, N°, Barrio, Ciudad">
+        </div>
+
+        <!-- Datos bancarios / Billetera -->
+        <div class="card" style="flex:1;">
+          <div class="box-title">Pago de comisiones</div>
+
+          <div class="row" style="gap:10px;">
+            <span class="chip">Banco</span>
+            <span class="chip">o Billetera</span>
+          </div>
+
+          <label>Banco</label><input id="pf_bank_name" placeholder="Banco...">
+          <label>Tipo de cuenta</label>
+          <select id="pf_bank_type">
+            <option value="">(seleccionar)</option>
+            <option>CAJA DE AHORRO</option>
+            <option>CUENTA CORRIENTE</option>
+          </select>
+          <label>N° de cuenta</label><input id="pf_bank_num" placeholder="000-000-000">
+          <label>Titular</label><input id="pf_bank_holder" placeholder="Nombre y apellido del titular">
+          <label>CI del titular</label><input id="pf_bank_holder_ci" placeholder="N° documento">
+
+          <hr style="border:0;border-top:1px solid #2a2a3a; margin:12px 0;">
+
+          <label>Proveedor billetera</label>
+          <select id="pf_wallet_provider">
+            <option value="">(ninguno)</option>
+            <option>Tigo Money</option>
+            <option>Personal</option>
+            <option>Bancard/Payphone</option>
+            <option>UENO</option>
+            <option>Binance Pay</option>
+          </select>
+          <label>N° billetera / Alias</label><input id="pf_wallet_number" placeholder="Ej: 0981... / alias">
+          <label>Titular billetera</label><input id="pf_wallet_holder" placeholder="Nombre del titular">
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:12px; gap:10px;">
+        <button class="btn" onclick="saveProfile()">Guardar</button>
+        <span class="badge">Solo actualiza tus datos. (ADMIN verá estos datos para pagos)</span>
+      </div>
+    </div>
+  </section>
+  <!-- ======== FIN PERFIL ======== -->
+
+  <!-- Toast -->
+  <div id="toast" class="card hidden"></div>
+
+  <!-- Modal Guía -->
+  <div id="guideModal" class="modal">
+    <div class="box">
+      <div class="row" style="justify-content:space-between; align-items:center;">
+        <h3>Vista previa de guía</h3>
+        <button class="btn" onclick="closeGuide()">Cerrar</button>
+      </div>
+      <textarea id="guideText" rows="12" style="width:100%; margin:8px 0;" readonly>Cargando...</textarea>
+      <button class="btn" onclick="downloadGuide()">Descargar PDF</button>
+    </div>
+  </div>
+
+  <!-- Modal Reset Request -->
+  <div id="resetReqModal" class="modal">
+    <div class="box">
+      <div class="row" style="justify-content:space-between; align-items:center;">
+        <h3>Restablecer contraseña</h3>
+        <button class="btn" onclick="closeResetRequest()">Cerrar</button>
+      </div>
+      <label>Email de tu cuenta</label>
+      <input id="reset_email" placeholder="tu@email.com">
+      <div class="row" style="margin-top:10px;">
+        <button class="btn" onclick="submitResetRequest()">Enviar enlace</button>
+      </div>
+      <small class="badge">Si el email existe, te enviaremos un enlace válido por 60 minutos.</small>
+    </div>
+  </div>
+
+  <!-- Modal Set New Password -->
+  <div id="resetSetModal" class="modal">
+    <div class="box">
+      <div class="row" style="justify-content:space-between; align-items:center;">
+        <h3>Definir nueva contraseña</h3>
+        <button class="btn" onclick="closeResetSet()">Cerrar</button>
+      </div>
+      <label>Nueva contraseña</label>
+      <input id="reset_newpass" type="password" placeholder="Nueva contraseña">
+      <label>Confirmar contraseña</label>
+      <input id="reset_newpass2" type="password" placeholder="Confirmar">
+      <div class="row" style="margin-top:10px;">
+        <button class="btn" onclick="submitResetSet()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // =========================
+  // Variables y helpers
+  // =========================
+  let me=null, products=[], deliveries=[], lastOrders=[], catalogMap={}, clientCityPrices=[];
+  let CHART_BARS=null, CHART_PIE=null, CHART_GG=null, CHART_GP=null; let guideOrderId=null;
+  let rateMap = {}; let allRatesMap = {};
+  const tokenKey='skyline_token';
+  const emailKey='skyline_email';
+  const nf = n=> new Intl.NumberFormat('es-PY').format(Number(n||0));
+  const norm = s => String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+
+  const toast = (msg)=>{ const t=document.getElementById('toast'); t.textContent=msg; t.classList.remove('hidden'); setTimeout(()=>t.classList.add('hidden'),2200); };
+  const show = (name)=>{ ['auth','dashboard','products','order','orders','wallet','rates','news','commissions','counter','closures','withGuides','profile']
+      .forEach(v=>document.getElementById('view-'+v).classList.toggle('hidden', v!==name)); };
+
+  // sello de última actualización
+  function timeStamp(){ const d=new Date(); return d.toLocaleString('es-PY'); }
+  function markUpdated(){ const el=document.getElementById('lastUpdateText'); if (el) el.textContent=timeStamp(); }
+
+  function setUserBoxUI(user){
+    const box=document.getElementById('userBox');
+    box.innerHTML=user?`<span class="chip">${user.email}</span><button class="btn" onclick="logout()">Salir</button>`:'';
+  }
+  function setNavForAuth(isAuthed, role){
+    const vis=(id,ok)=>document.getElementById(id).classList.toggle('hidden', !ok);
+    vis('navLogin', !isAuthed);
+    vis('navDash', isAuthed);
+    vis('navNews', isAuthed);
+
+    // === NUEVO: botón visible solo para ADMIN y DESPACHANTE
+    vis('navWithGuides', isAuthed && (role==='ADMIN' || role==='DESPACHANTE'));
+
+    vis('navOrders', isAuthed);
+    vis('navWallet', isAuthed);
+    vis('navProd', isAuthed && role!=='DELIVERY');
+    vis('navOrder', isAuthed && role==='VENDEDOR');
+    vis('navRates', isAuthed);
+    vis('navComms', isAuthed && role==='ADMIN');
+    vis('navCounter', isAuthed && role==='ADMIN');
+    vis('navClosures', isAuthed && role==='ADMIN');
+
+    // ===== NUEVO: PERFIL para TODOS =====
+    vis('navProfile', isAuthed);
+  }
+  const openLogin = ()=>{ me=null; setUserBoxUI(null); setNavForAuth(false); document.getElementById('roleChip').textContent='';
+    show('auth');
+    // precargar email recordado
+    const saved = localStorage.getItem(emailKey)||''; if (saved){ li_email.value=saved; li_saveemail.checked=true; }
+  };
+
+  // =========================
+  // Auth
+  // =========================
+  function onRegister(){
+    google.script.run.withSuccessHandler(()=>{ toast('Cuenta creada. Inicia sesión.'); li_email.value = re_email.value.trim(); })
+      .withFailureHandler(e=>toast(e.message||e))
+      .register(re_name.value.trim(), re_email.value.trim(), re_pass.value, re_role.value);
+  }
+  function onLogin(){
+    const remember = !!document.getElementById('li_remember').checked;
+    const rememberEmail = !!document.getElementById('li_saveemail').checked;
+    if (rememberEmail) localStorage.setItem(emailKey, (li_email.value||'').trim());
+    else localStorage.removeItem(emailKey);
+
+    google.script.run.withSuccessHandler(res=>{
+        localStorage.setItem(tokenKey, res.session.token);
+        init();
+      })
+      .withFailureHandler(e=>toast(e.message||e))
+      .login(li_email.value.trim(), li_pass.value, remember);
+  }
+  function logout(){ localStorage.removeItem(tokenKey); openLogin(); }
+
+  // =========================
+  // Init
+  // =========================
+  function init(){
+    const tok=localStorage.getItem(tokenKey);
+    google.script.run.withSuccessHandler(res=>{
+      if (!res.authenticated){ openLogin(); return; }
+      me=res.user; setUserBoxUI(me); setNavForAuth(true, me.role);
+      document.getElementById('roleChip').textContent = me.role;
+
+      const today=new Date(); const ymd=d=>d.toISOString().slice(0,10); const d7=new Date(today.getTime()-6*24*3606*1000);
+      ['dash_from','of_from','pc_from','pg_from'].forEach(id=>{ const el=document.getElementById(id); if (el) el.value = ymd(d7); });
+      ['dash_to','of_to','pc_to','pg_to'].forEach(id=>{ const el=document.getElementById(id); if (el) el.value = ymd(today); });
+      ['cl_from','cl_to'].forEach(id=>{ const el=document.getElementById(id); if (el) el.value = ymd(today); });
+
+      if (me.role==='DELIVERY'){ 
+        document.getElementById('kpi5_title').textContent='Monto a rendir (Gs)'; 
+        document.getElementById('th_comm').textContent='Tarifa repartidor (Gs)'; 
+        document.getElementById('kpiSumEntregadoRow').classList.remove('hidden');
+      } else { 
+        document.getElementById('th_comm').textContent='Monto a comisionar (Gs)'; 
+      }
+      document.getElementById('guideBlocks')?.classList.toggle('hidden', me.role!=='DESPACHANTE');
+
+      loadCatalog();
+      buildCityDropdown();
+      refreshOrders();
+      loadRates();
+      loadClientPrices();
+      refreshDashboard();
+      refreshWallet();
+      if (me.role==='ADMIN'){ loadSeqAdmin(); }
+      if (me.role==='ADMIN'){
+        google.script.run.withSuccessHandler(ds=>{
+          const sel = document.getElementById('cl_delivery');
+          if (sel){
+            const opts = ['<option value="">Todos los repartidores</option>']
+              .concat((ds||[]).map(d=>`<option value="${(d.email||'').toLowerCase()}">${d.name||d.email}</option>`));
+            sel.innerHTML = opts.join('');
+          }
+        }).withFailureHandler(()=>{}).listUsersByRole(tok,'DELIVERY');
+      }
+
+      // preparar búsqueda en vivo
+      wireSearchInputs();
+      // búsqueda productos en vivo
+      wireProductSearch();
+
+      // === NUEVO: búsqueda en vivo vista Pedidos con guías
+      wirePendingGuidesSearch();
+
+      markUpdated();
+      show('dashboard');
+
+      const b=document.getElementById('btnAddProduct');
+      if (b) b.classList.toggle('hidden', me.role!=='ADMIN');
+    }).me(tok);
+
+    try{
+      const params = new URLSearchParams(location.search);
+      const resetTok = params.get('reset');
+      if (resetTok){ window._pendingResetToken = resetTok; openResetSet(); }
+    }catch(e){}
+
+    document.getElementById('navClosures')?.addEventListener('click', ()=>{
+      loadRates(); refreshOrders(); loadClosures();
+    });
+  }
+
+  // =========================
+  // Refresco suave (sin cerrar sesión)
+  // =========================
+  function softRefresh(){
+    refreshOrders();
+    refreshDashboard();
+    refreshWallet();
+    loadRates();
+    loadClientPrices();
+
+    // === NUEVO: re-render vista Pedidos con guías
+    renderPendingGuides();
+
+    markUpdated();
+    toast('Actualizado');
+  }
+
+  // =========================
+  // Catálogo / Productos
+  // =========================
+  function loadCatalog(){
+    const tok=localStorage.getItem(tokenKey);
+    const stat=document.getElementById('catalogStatus'); if (stat) stat.textContent='Cargando catálogo...';
+    google.script.run.withSuccessHandler(rows=>{
+      products=rows; catalogMap={}; rows.forEach(p=>catalogMap[(p.sku||'').trim()]=p);
+
+      // === render tabla (lo que ya tenías)
+      const tb=document.querySelector('#tblProducts tbody'); if (tb){ tb.innerHTML='';
+        rows.forEach(p=>{
+          const tr=document.createElement('tr');
+          tr.innerHTML=`<td><img class="thumb" src="${p.image_url||''}" onerror="this.src='https://via.placeholder.com/64'"></td>
+            <td>${p.title}</td><td>${p.sku}</td><td class="right">${nf(p.provider_price_gs)}</td><td class="right">${p.stock}</td>`;
+          tb.appendChild(tr);
+        });
+      }
+      if (stat) stat.textContent='Catálogo cargado';
+
+      // === NUEVO: render cards
+      renderProductCards();
+
+      // si estás en "Cargar pedido", inicializar items
+      const box=document.getElementById('itemsBox'); if (box){ if(!box.children.length){ addItemRow(); } recalcOrder(); }
+      markUpdated();
+    }).withFailureHandler(e=>toast(e.message||e)).listProducts(tok);
+  }
+
+  // === NUEVO: búsqueda en vivo de productos (cards)
+  function wireProductSearch(){
+    const q=document.getElementById('prod_q'); if (!q) return;
+    let t=null;
+    const trigger=()=>{ clearTimeout(t); t=setTimeout(renderProductCards, 160); };
+    q.addEventListener('input', trigger);
+    q.addEventListener('keyup', (e)=>{ if (e.key==='Enter') renderProductCards(); });
+  }
+
+  // === NUEVO: renderizador de cards
+  function renderProductCards(){
+    const grid=document.getElementById('prodGrid'); if (!grid) return;
+    const q=(document.getElementById('prod_q')?.value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+    const list=(products||[]).filter(p=>{
+      if (!q) return true;
+      const hay=[p.title||'', p.sku||''].join(' ').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+      return hay.includes(q);
+    });
+
+    grid.innerHTML='';
+    list.forEach(p=>{
+      const div=document.createElement('div');
+      div.className='prod-card';
+      div.innerHTML = `
+        <img class="prod-img" src="${p.image_url||''}" onerror="this.src='https://via.placeholder.com/400x320?text=Sin+imagen'">
+        <div class="prod-body">
+          <div class="prod-title">${p.title||''}</div>
+          <div class="prod-meta">
+            <span class="badge">SKU: ${p.sku||''}</span>
+            <span class="badge">Stock: ${Number(p.stock||0)}</span>
+          </div>
+        </div>
+        <div class="prod-foot">
+          <span class="muted">Prov: Gs ${nf(p.provider_price_gs||0)}</span>
+          <button class="btn small" onclick="openProductModal('${p.sku||''}')">Ver</button>
+        </div>
+      `;
+      // click en toda la card
+      div.addEventListener('click', (ev)=>{
+        // evitar doble apertura si clic en el botón
+        if ((ev.target||{}).closest && (ev.target).closest('button')) return;
+        openProductModal(p.sku||'');
+      });
+      grid.appendChild(div);
+    });
+  }
+
+  // === NUEVO: toggle tabla (se conserva la tabla original, por si la querés usar)
+  function toggleProdTable(){
+    const wrap=document.getElementById('prodTableWrap');
+    const btn=document.getElementById('prod_toggle_table');
+    const hidden=wrap.classList.toggle('hidden');
+    btn.textContent = hidden ? 'Mostrar tabla' : 'Ocultar tabla';
+  }
+
+  // === NUEVO: Modal de producto
+  function openProductModal(sku){
+    const p = (products||[]).find(x=>String(x.sku||'')===String(sku));
+    if (!p) return;
+    document.getElementById('pm_img').src = p.image_url || 'https://via.placeholder.com/220x220?text=No+image';
+    document.getElementById('pm_title').textContent = p.title || '—';
+    document.getElementById('pm_sku').textContent = p.sku || '—';
+    document.getElementById('pm_provider').textContent = nf(p.provider_price_gs||0);
+    document.getElementById('pm_stock').textContent = nf(p.stock||0);
+
+    document.getElementById('productModal').style.display='flex';
+  }
+  function closeProductModal(){ document.getElementById('productModal').style.display='none'; }
+
+  function openAddProduct(){ document.getElementById('addProductBox').classList.toggle('hidden'); }
+  function saveNewProduct(){
+    const tok=localStorage.getItem(tokenKey);
+    const private_emails = (np_private.value||'').split(',').map(s=>s.trim()).filter(Boolean);
+    const p={ title:np_title.value.trim(), sku:np_sku.value.trim(), provider_price_gs:Number(np_price.value||0), stock:Number(np_stock.value||0), image_url:np_img.value.trim(), private_emails };
+    if (!p.title || !p.sku) { toast('Título y SKU son obligatorios'); return; }
+    google.script.run.withSuccessHandler(()=>{ toast('Producto guardado'); loadCatalog(); addProductBox.classList.add('hidden'); })
+      .withFailureHandler(e=>toast(e.message||e)).addProduct(tok, p);
+  }
+
+  // =========================
+  // Ciudades (cliente)
+  // =========================
+  function buildCityDropdown(){
+    const tok=localStorage.getItem(tokenKey);
+    google.script.run.withSuccessHandler(rows=>{
+      clientCityPrices=rows||[];
+      const sel=o_city; sel.innerHTML='<option value="">Selecciona ciudad…</option>'+rows.map(r=>`<option>${r.city}</option>`).join('');
+    }).getDeliveryClientPrices(tok);
+  }
+
+  // =========================
+  // Pedido (form)
+  // =========================
+  function addItemRow(){
+    const box=document.getElementById('itemsBox');
+    const idx=box.children.length;
+    const row=document.createElement('div'); row.className='row orderItemRow';
+    row.innerHTML=`
+      <select class="itemSelect" id="it_sku_${idx}" style="flex:2" onchange="recalcOrder()">
+        ${products.map(p=>`<option value="${p.sku}" ${p.stock<=0?'disabled':''}>${p.title} — ${p.sku} (Prov ${nf(p.provider_price_gs)})</option>`).join('')}
+      </select>
+      <span class="chip">Prov: <span class="provUnit">0</span></span>
+      <input class="ventaInp" id="it_sale_${idx}" type="number" placeholder="Venta TOTAL (Gs)" style="flex:1" oninput="recalcOrder()">
+      <input class="qtyInp" id="it_qty_${idx}" type="number" value="1" placeholder="Cant." style="width:90px" oninput="recalcOrder()">
+      <span class="chip">Prov×Cant: <span class="subProv">0</span></span>
+      <button class="btn small" onclick="this.parentElement.remove(); recalcOrder()">Quitar</button>`;
+    box.appendChild(row); recalcOrder();
+  }
+  function getItems(){
+    const rows=[...document.querySelectorAll('.orderItemRow')]; const items=[];
+    rows.forEach(row=>{
+      const sel=row.querySelector('.itemSelect'); const sale=row.querySelector('.ventaInp'); const qty=row.querySelector('.qtyInp');
+      const sku=sel?.value; const s=Number(sale?.value||0); const q=Number(qty?.value||0);
+      if (!sku || s<=0 || q<=0) return; items.push({sku, sale_gs:s, qty:q});
+    });
+    return items;
+  }
+  function recalcOrder(){
+    const rows=[...document.querySelectorAll('.orderItemRow')];
+    let totalVenta=0, totalProv=0;
+    rows.forEach(row=>{
+      const sel=row.querySelector('.itemSelect'); const sale=row.querySelector('.ventaInp'); const qty=row.querySelector('.qtyInp');
+      const provSpan=row.querySelector('.provUnit'); const subProv=row.querySelector('.subProv');
+      const sku=sel?.value||''; const provUnit=Number(catalogMap[sku]?.provider_price_gs||0);
+      if (provSpan) provSpan.textContent=nf(provUnit);
+      const s=Number(sale?.value||0); const q=Number(qty?.value||0);
+      totalVenta+=s; totalProv+=provUnit*q; if (subProv) subProv.textContent=nf(provUnit*q);
+    });
+    const city=(o_city.value||'').trim();
+    const found=(clientCityPrices||[]).find(c=>String(c.city||'').toLowerCase()===city.toLowerCase());
+    const del=found?Number(found.price||0):0;
+    cityHint.textContent = del?`Delivery cobrado: ${nf(del)} Gs`:'';
+    o_total.value=nf(totalVenta); o_delivery.value=nf(del);
+    o_commission.value = nf(totalVenta - (totalProv + del));
+  }
+  function saveOrder(){
+    const tok=localStorage.getItem(tokenKey);
+    const order={ customer_name:o_customer.value.trim(), phone:o_phone.value.trim(), city:o_city.value.trim(), street:o_street.value.trim(), district:o_district.value.trim(),
+      email:o_email.value.trim(), obs:o_obs.value.trim(), items:getItems() };
+    if (!order.customer_name || !order.phone || !order.city) { toast('Completa cliente / teléfono / ciudad'); return; }
+    if (order.items.length===0){ toast('Agrega al menos 1 ítem'); return; }
+    google.script.run.withSuccessHandler(()=>{ toast('Pedido guardado'); refreshOrders(); refreshDashboard();
+      o_customer.value=''; o_phone.value=''; o_email.value=''; o_street.value=''; o_district.value=''; o_obs.value=''; itemsBox.innerHTML=''; addItemRow();
+    }).withFailureHandler(e=>toast(e.message||e)).addOrder(tok,order);
+  }
+
+  // =========================
+  // WhatsApp (DELIVERY)
+  // =========================
+  function toWhatsAppNumber(raw){
+    const s = String(raw||'').replace(/[^\d+]/g,'');
+    if (!s) return '';
+    if (s.startsWith('+')) return s.replace(/\s+/g,'');
+    let d = s.replace(/^0+/, '');
+    if (!d.startsWith('595')) d = '595' + d;
+    return '+' + d;
+  }
+  function sendWhatsApp(orderId){
+    const tok=localStorage.getItem(tokenKey);
+    const order=(lastOrders||[]).find(o=>String(o.id)===String(orderId));
+    if (!order){ toast('Pedido no encontrado'); return; }
+    const phone=toWhatsAppNumber(order.phone||'');
+    if (!phone){ toast('El pedido no tiene teléfono válido'); return; }
+    const header=`Buenas, le escribo del sector de repartos 👋
+Quiero coordinar la entrega de su pedido. Estos son los detalles:`;
+    const footer = `\n¿Podría enviarme su ubicación por Google Maps para llegar de forma segura? Muchas gracias.`;
+    google.script.run.withSuccessHandler(txt=>{
+      const msg = `${header}\n\n${txt}\n${footer}`;
+      const url = `https://wa.me/${phone.replace('+','')}?text=${encodeURIComponent(msg)}`;
+      window.open(url,'_blank');
+    }).withFailureHandler(e=>toast(e.message||e)).getGuideText(tok,orderId);
+  }
+
+  // =========================
+  // Pedidos (listado)
+  // =========================
+  function refreshOrders(){
+    const tok=localStorage.getItem(tokenKey);
+    google.script.run.withSuccessHandler(rows=>{ 
+      lastOrders=rows; 
+      renderOrdersLast(); 
+      // === NUEVO: refrescar también la vista Pedidos con guías
+      renderPendingGuides();
+      markUpdated(); 
+    })
+      .withFailureHandler(e=>toast(e.message||e)).listOrders(tok);
+    google.script.run.withSuccessHandler(ds=>{ deliveries=ds||[]; renderOrdersLast(); })
+      .withFailureHandler(()=>{}).listUsersByRole(tok,'DELIVERY');
+  }
+
+  // 🔎 Búsqueda: soporta ID tipo "A1089" y "1089" + normaliza acentos
+  function renderOrdersLast(){
+    const tb=document.querySelector('#tblOrders tbody'); if (!tb) return;
+
+    const fromEl=document.getElementById('of_from');
+    const toEl=document.getElementById('of_to');
+    const qEl=document.getElementById('orderSearch');
+
+    const f=fromEl?.value? new Date(fromEl.value+'T00:00:00'):new Date('1970-01-01');
+    const t=toEl?.value  ? new Date(toEl.value  +'T23:59:59'):new Date('2999-12-31');
+    const qNorm=norm(qEl?.value||'');
+
+    if (me?.role==='DESPACHANTE'){
+      document.querySelector('#tblOrders thead').innerHTML=`
+        <tr>
+          <th>Fecha</th><th>ID</th><th>Ciudad</th><th>Cliente</th><th>Vendedor</th>
+          <th class="right">Total (Gs)</th><th>Estado 2 (ADMIN/DESP)</th><th>Estado 3 (Empaques)</th><th>Guía</th>
+        </tr>`;
+    } else if (me?.role==='DELIVERY'){
+      document.querySelector('#tblOrders thead').innerHTML=`
+        <tr>
+          <th>Asignado</th><th>ID</th><th>Ciudad</th><th>Cliente</th><th>Vendedor</th>
+          <th class="right">Total (Gs)</th><th class="right">Tarifa repartidor (Gs)</th>
+          <th>Estado 1</th><th>Acciones</th>
+        </tr>`;
+    } else {
+      document.querySelector('#tblOrders thead').innerHTML=`
+        <tr>
+          <th>Fecha</th><th>ID</th><th>Ciudad</th><th>Cliente</th><th>Vendedor</th><th>Delivery asignado</th>
+          <th class="right">Total (Gs)</th><th class="right" id="th_comm">${me?.role==='DELIVERY'?'Tarifa repartidor (Gs)':'Monto a comisionar (Gs)'}</th>
+          <th>Estado 1</th><th>Estado 2 (ADMIN/DESP)</th><th>Asignar Delivery</th><th>Guía</th>
+        </tr>`;
+    }
+
+    const data=(lastOrders||[]).filter(o=>{
+      const baseDate = (me?.role==='DELIVERY' && o.assigned_at) ? o.assigned_at : o.created_at;
+      const d=new Date(baseDate);
+      if (d<f || d>t) return false;
+      if (!qNorm) return true;
+
+      const idNum = String(o.id||'').replace(/^[a-z]+/i,''); // A1089 -> 1089
+      const hay = [
+        o.customer_name||'', o.phone||'', o.id||'', idNum, o.city||'', o.created_by||''
+      ].map(norm).join(' ');
+
+      return hay.includes(qNorm);
+    });
+
+    const tbBody=tb;
+    tbBody.innerHTML='';
+
+    data.forEach(o=>{
+      const meRole=me?.role||'';
+
+      if (meRole==='DELIVERY'){
+        const allowedForDelivery = [
+          'PENDIENTE','EN RUTA','ENTREGADO','ENCOMIENDA ENTREGADA','CANCELADO','REAGENDADO','NO CONTESTA',
+          'RECHAZADO','RECHAZADO EN EL LUGAR','NO DESEA','CANCELÓ POR WHATSAPP'
+        ];
+        const stateSel = `<select data-id="${o.id}" class="stateSel">
+          ${allowedForDelivery.map(s=>`<option value="${s}" ${s===o.status?'selected':''}>${s}</option>`).join('')}
+        </select>`;
+
+        const feeAsentado=Number(o.delivery_fee_gs||0);
+        const fee = feeAsentado>0 ? feeAsentado : (rateMap[norm(o.city)]||0);
+        const dateShown = o.assigned_at ? new Date(o.assigned_at).toLocaleString('es-PY') : new Date(o.created_at).toLocaleString('es-PY');
+
+        const tr=document.createElement('tr');
+        tr.innerHTML=`
+          <td>${dateShown}</td>
+          <td>${o.id}</td><td>${o.city||''}</td><td>${o.customer_name||''}</td><td>${o.created_by||''}</td>
+          <td class="right">${nf(o.total_gs)}</td><td class="right">${nf(fee)}</td>
+          <td>${stateSel}</td>
+          <td>
+            <div class="row" style="gap:6px;">
+              <button class="btn small" onclick="sendWhatsApp('${o.id}')">WhatsApp</button>
+              <button class="btn small" onclick="openGuide('${o.id}')">Guía</button>
+            </div>
+          </td>`;
+        tbBody.appendChild(tr);
+        return;
+      }
+
+      if (meRole==='DESPACHANTE'){
+        const state2Opts=['--','GUIA GENERADA','FUERA DE COBERTURA','CANCELADO','REPETIDO','RENDIDO'];
+        const state2Sel = `<select data-id="${o.id}" class="state2Sel">
+          ${state2Opts.map(s=>`<option value="${s}" ${s===o.status2?'selected':''}>${s}</option>`).join('')}
+        </select>`;
+        const packInput = `<div class="row" style="gap:6px;">
+            <input data-id="${o.id}" class="packInp" type="number" min="0" value="${Number(o.pack_count||0)}" style="width:120px">
+            <span class="chip">Gs ${nf(Number(o.pack_count||0)*3500)}</span>
+          </div>`;
+        const tr=document.createElement('tr');
+        tr.innerHTML=`
+          <td>${new Date(o.created_at).toLocaleString('es-PY')}</td>
+          <td>${o.id}</td><td>${o.city||''}</td><td>${o.customer_name||''}</td><td>${o.created_by||''}</td>
+          <td class="right">${nf(o.total_gs)}</td>
+          <td>${state2Sel}</td>
+          <td>${packInput}</td>
+          <td><button class="btn small" onclick="openGuide('${o.id}')">Vista previa</button></td>`;
+        tbBody.appendChild(tr);
+        return;
+      }
+
+      const disableState1 = (meRole==='VENDEDOR');
+      const disableState2 = !(meRole==='ADMIN' || meRole==='DESPACHANTE');
+      const disableDevuelto = (meRole==='DELIVERY');
+      const canAssign = (meRole==='ADMIN');
+
+      const state1Opts = ['PENDIENTE','EN RUTA','ENTREGADO','ENCOMIENDA ENTREGADA','CANCELADO','REAGENDADO','NO CONTESTA','RECHAZADO','RECHAZADO EN EL LUGAR','NO DESEA','CANCELÓ POR WHATSAPP','DEVUELTO A DEPÓSITO'];
+      const state2Opts = ['--','GUIA GENERADA','FUERA DE COBERTURA','CANCELADO','REPETIDO','RENDIDO'];
+
+      const stateSel = `<select data-id="${o.id}" class="stateSel" ${disableState1?'disabled':''}>
+          ${state1Opts.map(s=>`<option value="${s}" ${s===o.status?'selected':''} ${(disableDevuelto&&s==='DEVUELTO A DEPÓSITO')?'disabled':''}>${s}</option>`).join('')}
+        </select>`;
+      const state2Sel = `<select data-id="${o.id}" class="state2Sel" ${disableState2?'disabled':''}>
+          ${state2Opts.map(s=>`<option value="${s}" ${s===o.status2?'selected':''}>${s}</option>`).join('')}
+        </select>`;
+      const delSel = `<select data-id="${o.id}" class="assignSel" ${canAssign?'':'disabled'}>
+          <option value="">-- Sin asignar --</option>
+          ${deliveries.map(d=>`<option value="${d.email}" ${o.assigned_delivery===d.email?'selected':''}>${d.name||d.email}</option>`).join('')}
+        </select>`;
+
+      let colVal;
+      if (meRole === 'DELIVERY') {
+        const feeAsentado = Number(o.delivery_fee_gs||0);
+        colVal = feeAsentado > 0 ? feeAsentado : (rateMap[norm(o.city)] || 0);
+      } else { colVal = Number(o.commission_gs||0); }
+
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${new Date(o.created_at).toLocaleString('es-PY')}</td>
+        <td>${o.id}</td><td>${o.city||''}</td><td>${o.customer_name||''}</td>
+        <td>${o.created_by||''}</td><td>${o.assigned_delivery||''}</td>
+        <td class="right">${nf(o.total_gs)}</td>
+        <td class="right">${nf(colVal)}</td>
+        <td>${stateSel}</td><td>${state2Sel}</td><td>${delSel}</td>
+        <td><button class="btn small" onclick="openGuide('${o.id}')">Vista previa</button></td>`;
+      tbBody.appendChild(tr);
+    });
+
+    tb.querySelectorAll('.stateSel').forEach(sel=>{
+      sel.onchange=(e)=>{
+        const id=e.target.getAttribute('data-id'); const status=e.target.value;
+        const tok=localStorage.getItem(tokenKey);
+        google.script.run.withSuccessHandler(()=>{ toast('Estado actualizado'); refreshDashboard(); refreshWallet(); refreshOrders(); })
+          .withFailureHandler(err=>{ toast(err.message||err); refreshOrders(); })
+          .updateOrderStatus(tok,id,status,'');
+      };
+    });
+    tb.querySelectorAll('.state2Sel').forEach(sel=>{
+      sel.onchange=(e)=>{
+        const id=e.target.getAttribute('data-id'); const status2=e.target.value;
+        const tok=localStorage.getItem(tokenKey);
+        google.script.run.withSuccessHandler(()=>{ toast('Estado 2 actualizado'); refreshWallet(); refreshOrders(); refreshDashboard(); })
+          .withFailureHandler(err=>{ toast(err.message||err); refreshOrders(); })
+          .updateOrderStatus2(tok,id,status2);
+      };
+    });
+    tb.querySelectorAll('.assignSel').forEach(sel=>{
+      sel.onchange=(e)=>{
+        const id=e.target.getAttribute('data-id'); const deliveryEmail=e.target.value; const tok=localStorage.getItem(tokenKey);
+        google.script.run.withSuccessHandler(()=>{ toast('Delivery asignado'); refreshOrders(); refreshDashboard(); })
+          .withFailureHandler(err=>{ toast(err.message||err); refreshOrders(); })
+          .assignDelivery(tok,id,deliveryEmail);
+      };
+    });
+    tb.querySelectorAll('.packInp').forEach(inp=>{
+      inp.onchange=(e)=>{
+        const id=e.target.getAttribute('data-id'); const qty=Number(e.target.value||0);
+        const tok=localStorage.getItem(tokenKey);
+        google.script.run.withSuccessHandler(()=>{ toast('Empaques guardados'); refreshOrders(); refreshWallet(); })
+          .withFailureHandler(err=>{ toast(err.message||err); refreshOrders(); })
+          .setPackCount?.(tok,id,qty);
+      };
+    });
+  }
+
+  // Búsqueda en vivo
+  function wireSearchInputs(){
+    const os=document.getElementById('orderSearch');
+    if (!os) return;
+    let t=null;
+    const trigger=()=>{ clearTimeout(t); t=setTimeout(renderOrdersLast, 180); };
+    os.addEventListener('input', trigger);
+    os.addEventListener('keyup', (e)=>{ if (e.key==='Enter') renderOrdersLast(); });
+  }
+
+  // =========================
+  // Dashboard
+  // =========================
+  function refreshDashboard(){
+    const tok=localStorage.getItem(tokenKey);
+    const f=document.getElementById('dash_from')?.value||''; const t=document.getElementById('dash_to')?.value||'';
+    google.script.run.withSuccessHandler(res=>{
+      kpi_orders.textContent=nf(res.cards.orders);
+      kpi_sold.textContent=nf(res.cards.sold);
+      kpi_delivered.textContent=nf(res.cards.delivered);
+      kpi_canceled.textContent=nf(res.cards.canceled);
+
+      if (me?.role === 'DELIVERY') {
+        const fromDate = f ? new Date(f+'T00:00:00') : new Date('1970-01-01');
+        const toDate   = t ? new Date(t+'T23:59:59') : new Date('2999-12-31');
+        let montoRendir = 0; let sumaEntregadoTotal = 0;
+        (lastOrders||[]).forEach(o=>{
+          const baseDate = o.assigned_at ? new Date(o.assigned_at) : new Date(o.created_at);
+          if (baseDate < fromDate || baseDate > toDate) return;
+          if ((o.assigned_delivery||'').toLowerCase() !== (me.email||'').toLowerCase()) return;
+          const status = String(o.status||'').toUpperCase();
+          if (status === 'ENTREGADO') {
+            const total = Number(o.total_gs||0);
+            const feeReal = Number(o.delivery_fee_gs||0);
+            const feeEst  = rateMap[norm(o.city)] || 0;
+            const fee = feeReal>0 ? feeReal : feeEst;
+            sumaEntregadoTotal += total;
+            montoRendir += (total - fee);
+          }
+        });
+        document.getElementById('kpi_sum_entregado').textContent = nf(sumaEntregadoTotal);
+        kpi_profit.textContent = nf(montoRendir);
+      } else {
+        kpi_profit.textContent = nf(res.cards.profit);
+      }
+
+      const labels=res.series.map(s=>s.date), values=res.series.map(s=>s.value);
+      if (CHART_BARS) CHART_BARS.destroy();
+      CHART_BARS=new Chart(document.getElementById('chartBars').getContext('2d'),{
+        type:'bar', data:{labels, datasets:[{label:'Ventas por día (Gs)', data:values}]},
+        options:{responsive:true, maintainAspectRatio:false}
+      });
+
+      const pl=Object.keys(res.pie), pv=pl.map(k=>res.pie[k]);
+      if (CHART_PIE) CHART_PIE.destroy();
+      CHART_PIE=new Chart(document.getElementById('chartPie').getContext('2d'),{
+        type:'pie', data:{labels:pl, datasets:[{data:pv}]}, options:{responsive:true, maintainAspectRatio:false}
+      });
+
+      if (me?.role==='DESPACHANTE'){
+        kpi_guides_gen.textContent = nf(res.guides?.generated||0);
+        kpi_guides_pend.textContent = nf(res.guides?.pending||0);
+        const gl=(res.guides?.series||[]).map(x=>x.date);
+        const gg=(res.guides?.series||[]).map(x=>x.gen);
+        const gp=(res.guides?.series||[]).map(x=>x.pend);
+        if (CHART_GG) CHART_GG.destroy();
+        CHART_GG=new Chart(document.getElementById('chartGuideGen').getContext('2d'),{
+          type:'line', data:{labels:gl, datasets:[{label:'Generadas', data:gg}]}, options:{responsive:true, maintainAspectRatio:false}
+        });
+        if (CHART_GP) CHART_GP.destroy();
+        CHART_GP=new Chart(document.getElementById('chartGuidePend').getContext('2d'),{
+          type:'line', data:{labels:gl, datasets:[{label:'Pendientes', data:gp}]}, options:{responsive:true, maintainAspectRatio:false}
+        });
+      }
+
+      const tl=document.getElementById('topList'); tl.innerHTML='';
+      (res.top||[]).forEach(x=>{ const li=document.createElement('li'); li.textContent=`${x.name}: ${nf(x.qty)} (Gs ${nf(x.revenue)})`; tl.appendChild(li); });
+      const ml=document.getElementById('mapList'); ml.innerHTML='';
+      (res.map||[]).forEach(x=>{ const li=document.createElement('li'); li.textContent=`${x.city}: ${nf(x.qty)} pedidos (Gs ${nf(x.revenue)})`; ml.appendChild(li); });
+
+      markUpdated();
+    }).withFailureHandler(e=>toast(e.message||e)).metrics(tok,f,t);
+  }
+
+  // =========================
+  // Wallet
+  // =========================
+  function refreshWallet(){
+    const tok=localStorage.getItem(tokenKey);
+    google.script.run.withSuccessHandler(res=>{
+      w_balance.textContent = nf(res.balance_gs||0);
+      const tb=document.getElementById('wallet_tbody'); tb.innerHTML='';
+      (res.txs||[]).forEach(t=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML=`<td>${new Date(t.created_at).toLocaleString('es-PY')}</td>
+          <td>${t.type}</td><td>${t.order_id||''}</td><td class="right">${nf(t.amount_gs)}</td><td>${t.note||''}</td>`;
+        tb.appendChild(tr);
+      });
+      markUpdated();
+    }).getWallet(tok, '');
+  }
+
+  // =========================
+  // Novedades
+  // =========================
+  function refreshNews(){
+    const tok=localStorage.getItem(tokenKey);
+    google.script.run.withSuccessHandler(rows=>{
+      const tb=document.getElementById('news_tbody'); tb.innerHTML='';
+      (rows||[]).forEach(n=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML=`<td>${new Date(n.created_at).toLocaleString('es-PY')}</td><td>${n.order_id}</td><td>${n.type}</td><td>${n.note||''}</td>`;
+        tb.appendChild(tr);
+      });
+      markUpdated();
+    }).listNews(tok);
+  }
+
+  // =========================
+  // Tarifas + Precios cliente
+  // =========================
+  function loadRates(){
+    const tok=localStorage.getItem(tokenKey);
+    document.getElementById('ratesAdminBox').classList.toggle('hidden', me?.role!=='ADMIN');
+    google.script.run.withSuccessHandler(rows=>{
+      const tb=document.getElementById('rates_tbody'); tb.innerHTML='';
+      (rows||[]).forEach(r=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${r.email}</td><td>${r.city}</td><td class="right">${nf(r.rate_gs)}</td>`; tb.appendChild(tr); });
+      allRatesMap = {};
+      (rows||[]).forEach(r=>{ const em = norm(String(r.email||'')); const ct = norm(String(r.city||'')); if (!allRatesMap[em]) allRatesMap[em] = {}; allRatesMap[em][ct] = Number(r.rate_gs||0); });
+      rateMap = {}; if (me?.role === 'DELIVERY') { (rows||[]).forEach(r=>{ rateMap[norm(r.city)] = Number(r.rate_gs||0); }); }
+      markUpdated();
+    }).getDeliveryRates(tok, '');
+  }
+  function saveRate(){
+    const tok=localStorage.getItem(tokenKey);
+    google.script.run.withSuccessHandler(()=>{ toast('Tarifa guardada'); loadRates(); })
+      .withFailureHandler(e=>toast(e.message||e))
+      .setDeliveryRate(tok, dr_email.value.trim(), dr_city.value.trim(), Number(dr_rate.value||0));
+  }
+  function loadClientPrices(){
+    const tok=localStorage.getItem(tokenKey);
+    document.getElementById('clientPricesAdminBox').classList.toggle('hidden', me?.role!=='ADMIN');
+    google.script.run.withSuccessHandler(rows=>{
+      const tb=document.getElementById('client_prices_tbody'); if (!tb) return; tb.innerHTML='';
+      (rows||[]).forEach(r=>{ const tr=document.createElement('tr'); tr.innerHTML = `<td>${r.city}</td><td class="right">${nf(r.price)}</td>`; tb.appendChild(tr); });
+      markUpdated();
+    }).withFailureHandler(e=>toast(e.message||e)).getDeliveryClientPrices(tok);
+  }
+  function saveClientPrice(){
+    const tok=localStorage.getItem(tokenKey);
+    const city = (cp_city.value||'').trim(); const price = Number(cp_price.value||0);
+    if (!city || price<=0){ toast('Ciudad y precio son obligatorios'); return; }
+    google.script.run.withSuccessHandler(()=>{ toast('Precio guardado'); cp_city.value=''; cp_price.value=''; loadClientPrices(); buildCityDropdown(); })
+      .withFailureHandler(e=>toast(e.message||e))
+      .setClientCityPrice(tok, city, price);
+  }
+
+  // =========================
+  // Guía
+  // =========================
+  function openGuide(id){
+    guideOrderId=id; guideText.value='Cargando...'; document.getElementById('guideModal').style.display='flex';
+    const tok=localStorage.getItem(tokenKey);
+    google.script.run.withSuccessHandler(txt=>{ guideText.value=txt; })
+      .withFailureHandler(e=>{ guideText.value='Error: '+(e.message||e); })
+      .getGuideText(tok,id);
+  }
+  function closeGuide(){ document.getElementById('guideModal').style.display='none'; }
+  function downloadGuide(){
+    const tok=localStorage.getItem(tokenKey);
+    google.script.run.withSuccessHandler(f=>{ window.open(f.url,'_blank'); })
+      .withFailureHandler(e=>toast(e.message||e))
+      .generateGuidePDF(tok, guideOrderId);
+  }
+
+  // =========================
+  // Pago de Comisiones (ADMIN) con Estado 1 editable
+  // =========================
+  function loadCommissions(){
+    const tok=localStorage.getItem(tokenKey);
+    const f=document.getElementById('pc_from').value||''; const t=document.getElementById('pc_to').value||'';
+    const vend=(document.getElementById('pc_vendor').value||'').trim(); const only=document.getElementById('pc_only').value||''; const q=(document.getElementById('pc_q').value||'').trim();
+
+    // NUEVO: usamos la función FLEX que no obliga Estado 1 = ENTREGADO
+    google.script.run.withSuccessHandler(rows=>{
+      const tb=document.getElementById('comms_tbody'); tb.innerHTML='';
+
+      // === En Comisión, limitar selector Estado 1 a estos 2 (como pediste):
+      const state1Opts = ['ENTREGADO','ENCOMIENDA ENTREGADA']; // <-- SOLO estos 2 aquí
+
+      // Mostrar SOLO filas con esos estados (si querés ver los demás, quitá este filtro)
+      const allowed = new Set(state1Opts.map(s=>s.toUpperCase()));
+      const visibles = (rows||[]).filter(o => allowed.has(String(o.status||'').toUpperCase()));
+
+      /* === NUEVO: KPIs de Pago de comisiones (cantidad y suma de comisiones) === */
+      const pcCnt = visibles.length;
+      let pcSum = 0;
+      visibles.forEach(o => { pcSum += Number(o.commission_gs || 0); });
+      const kCntEl = document.getElementById('pc_k_cnt');
+      const kSumEl = document.getElementById('pc_k_sum');
+      if (kCntEl) kCntEl.textContent = nf(pcCnt);
+      if (kSumEl) kSumEl.textContent = nf(pcSum);
+      /* === FIN NUEVO === */
+
+      (visibles||[]).forEach(o=>{
+        const stateSel = `<select class="commStateSel" data-id="${o.id}">
+          ${state1Opts.map(s=>`<option value="${s}" ${s===o.status?'selected':''}>${s}</option>`).join('')}
+        </select>`;
+        const selPay=`<select class="commPaySel" data-id="${o.id}">
+          <option value="PENDIENTE" ${!o.commission_paid?'selected':''}>PENDIENTE</option>
+          <option value="PAGADO" ${o.commission_paid?'selected':''}>PAGADO</option>
+        </select>`;
+        const tr=document.createElement('tr');
+        tr.innerHTML=`
+          <td>${new Date(o.created_at).toLocaleString('es-PY')}</td>
+          <td>${o.id}</td><td>${o.city||''}</td><td>${o.customer_name||''}</td><td>${o.vendor_email||''}</td>
+          <td>${o.assigned_delivery||''}</td><td class="right">${nf(o.total_gs)}</td><td class="right">${nf(o.commission_gs)}</td>
+          <td>${stateSel}</td>
+          <td>${selPay} ${o.paid_at?`<span class="chip">${new Date(o.paid_at).toLocaleDateString('es-PY')}</span>`:''}</td>
+          <td><button class="btn small" onclick="openGuide('${o.id}')">Vista previa</button></td>`;
+        tb.appendChild(tr);
+      });
+
+      tb.querySelectorAll('.commStateSel').forEach(s=>{
+        s.onchange=(e)=>{
+          const id=e.target.getAttribute('data-id'); const status=e.target.value; const tok=localStorage.getItem(tokenKey);
+          google.script.run.withSuccessHandler(()=>{ toast('Estado 1 actualizado'); loadCommissions(); refreshWallet(); refreshDashboard(); })
+            .withFailureHandler(err=>{ toast(err.message||err); loadCommissions(); })
+            .updateOrderStatus(tok,id,status,'');
+        };
+      });
+      tb.querySelectorAll('.commPaySel').forEach(s=>{
+        s.onchange=(e)=>{
+          const id=e.target.getAttribute('data-id'); const paid=(e.target.value==='PAGADO'); const tok=localStorage.getItem(tokenKey);
+          google.script.run.withSuccessHandler(()=>{ toast('Pago comisión actualizado'); loadCommissions(); refreshWallet(); })
+            .withFailureHandler(err=>{ toast(err.message||err); loadCommissions(); })
+            .payVendorCommission(tok,id,paid);
+        };
+      });
+      markUpdated();
+    }).withFailureHandler(e=>toast(e.message||e))
+      .listCommissionsFlex(tok,f,t,vend,only,q);
+  }
+
+  // Botón "Marcar todos como PAGADO" (solo lo que ves en la tabla ahora)
+  function markAllCommissionsPaid(){
+    const tok=localStorage.getItem(tokenKey);
+    const rows=[...document.querySelectorAll('#comms_tbody tr')];
+    if (!rows.length){ toast('No hay filas en vista'); return; }
+    let done=0;
+    const ids=rows.map(tr=>tr.children[1]?.textContent?.trim()).filter(Boolean);
+    (function next(i){
+      if (i>=ids.length){ toast(`Marcados ${done}/${ids.length} como PAGADO`); loadCommissions(); refreshWallet(); return; }
+      const id=ids[i];
+      google.script.run.withSuccessHandler(()=>{ done++; next(i+1); })
+        .withFailureHandler(()=>{ next(i+1); })
+        .payVendorCommission(tok,id,true);
+    })(0);
+  }
+
+  // =========================
+  // Secuencia de IDs (admin)
+  // =========================
+  function loadSeqAdmin(){
+    if (!me || me.role!=='ADMIN') return;
+    const tok=localStorage.getItem(tokenKey);
+    google.script.run
+      .withSuccessHandler(res=>{
+        document.getElementById('seq_prefix').textContent = res.prefix;
+        document.getElementById('seq_pad').textContent    = res.pad;
+        document.getElementById('seq_value').textContent  = res.value;
+      })
+      .withFailureHandler(e=>toast(e.message||e))
+      .adminGetOrderCounter(tok);
+  }
+  function setSeq(){
+    const tok=localStorage.getItem(tokenKey);
+    const n = Number(document.getElementById('seq_new').value || '');
+    if (!Number.isInteger(n) || n<0){ toast('Ingresá un entero >= 0'); return; }
+    google.script.run
+      .withSuccessHandler(res=>{
+        toast('Contador actualizado');
+        document.getElementById('seq_value').textContent = res.value;
+        document.getElementById('seq_new').value = '';
+      })
+      .withFailureHandler(e=>toast(e.message||e))
+      .adminSetOrderCounter(tok, n);
+  }
+
+  // =========================
+  // Reset de contraseña
+  // =========================
+  function openResetRequest(){ document.getElementById('resetReqModal').style.display='flex'; }
+  function closeResetRequest(){ document.getElementById('resetReqModal').style.display='none'; }
+  function submitResetRequest(){
+    const email = (document.getElementById('reset_email').value||'').trim();
+    if (!email){ toast('Ingresá tu email'); return; }
+    google.script.run
+      .withSuccessHandler(()=>{ toast('Si el email existe, te enviamos un enlace'); closeResetRequest(); })
+      .withFailureHandler(e=>toast(e.message||e))
+      .requestPasswordReset(email);
+  }
+
+  function openResetSet(){ document.getElementById('resetSetModal').style.display='flex'; }
+  function closeResetSet(){ document.getElementById('resetSetModal').style.display='none'; }
+  function submitResetSet(){
+    const p1 = (document.getElementById('reset_newpass').value||'');
+    const p2 = (document.getElementById('reset_newpass2').value||'');
+    if (!p1 || !p2){ toast('Completá ambas contraseñas'); return; }
+    if (p1 !== p2){ toast('Las contraseñas no coinciden'); return; }
+    const tok = window._pendingResetToken || '';
+    if (!tok){ toast('Token inválido'); return; }
+    google.script.run
+      .withSuccessHandler(res=>{
+        toast('Contraseña actualizada');
+        if (res?.session?.token){
+          localStorage.setItem(tokenKey, res.session.token);
+          closeResetSet();
+          init();
+        } else {
+          closeResetSet();
+        }
+      })
+      .withFailureHandler(e=>toast(e.message||e))
+      .resetPasswordWithToken(tok, p1);
+  }
+
+  // =========================
+  // Cierres (ADMIN): Estado 1 editable + sin "eliminar"
+  // =========================
+  function getOrderFeeForDelivery(o){
+    const asentada = Number(o.delivery_fee_gs||0);
+    if (asentada > 0) return asentada;
+    const em = norm(String(o.assigned_delivery||'')); const ct = norm(String(o.city||'')); const byDel = allRatesMap[em] || {};
+    return Number(byDel[ct]||0);
+  }
+  
+  // === NUEVO: Función para calcular pedidos asignados hoy ===
+  function calculateAssignedToday(rows, f, t, dsel) {
+    const today = new Date().toISOString().slice(0, 10); // Fecha actual en formato YYYY-MM-DD
+    const assignedToday = rows.filter(o => {
+      const assignedDate = o.assigned_at ? new Date(o.assigned_at).toISOString().slice(0, 10) : null;
+      if (!assignedDate || assignedDate !== today) return false;
+      if (dsel && String(o.assigned_delivery||'').toLowerCase()!==dsel) return false;
+      return true;
+    });
+    return assignedToday.length;
+  }
+  
+  // === NUEVO: Función para alternar estado de rendición ===
+  function toggleRendicion() {
+    const btn = document.getElementById('rendicionBtn');
+    if (btn.classList.contains('pendiente')) {
+      btn.classList.remove('pendiente');
+      btn.classList.add('rendido');
+      btn.textContent = 'RENDIDO HOY';
+      toast('Estado cambiado a RENDIDO');
+    } else {
+      btn.classList.remove('rendido');
+      btn.classList.add('pendiente');
+      btn.textContent = 'PENDIENTE DE RENDIR';
+      toast('Estado cambiado a PENDIENTE');
+    }
+  }
+
+  function loadClosures(){
+    const tok = localStorage.getItem(tokenKey);
+    const f = (document.getElementById('cl_from')?.value||'');
+    const t = (document.getElementById('cl_to')?.value||'');
+    const dsel = (document.getElementById('cl_delivery')?.value||'').trim().toLowerCase();
+    const type = (document.getElementById('cl_type')?.value||'').trim().toUpperCase();
+
+    const afterOrders = (rows)=>{
+      const from = f? new Date(f+'T00:00:00') : new Date('1970-01-01');
+      const to   = t? new Date(t+'T23:59:59') : new Date('2999-12-31');
+
+      const base = (rows||[]).filter(o=>{
+        const baseDate = o.assigned_at ? new Date(o.assigned_at) : (o.created_at? new Date(o.created_at): null);
+        if (!baseDate || baseDate<from || baseDate>to) return false;
+        if (dsel && String(o.assigned_delivery||'').toLowerCase()!==dsel) return false;
+        return true;
+      });
+
+      const tableRows = base.filter(o=>{ if (!type) return true; return String(o.status||'').toUpperCase()===type; });
+
+      const delivered = base.filter(o=> String(o.status||'').toUpperCase()==='ENTREGADO');
+      const cnt = delivered.length;
+      let sumTotal=0, sumFee=0;
+      delivered.forEach(o=>{ sumTotal += Number(o.total_gs||0); sumFee   += getOrderFeeForDelivery(o); });
+      const net = sumTotal - sumFee;
+
+      // === NUEVO: Calcular pedidos asignados hoy ===
+      const assignedToday = calculateAssignedToday(rows, f, t, dsel);
+
+      document.getElementById('cl_k_cnt').textContent = nf(cnt);
+      document.getElementById('cl_k_rev').textContent = nf(sumTotal);
+      document.getElementById('cl_k_fee').textContent = nf(sumFee);
+      document.getElementById('cl_k_net').textContent = nf(net);
+      document.getElementById('cl_k_assigned_today').textContent = nf(assignedToday);
+
+      // === NUEVO: Mostrar botón de rendición solo para ADMIN ===
+      const rendicionContainer = document.getElementById('rendicionBtnContainer');
+      if (me?.role === 'ADMIN') {
+        rendicionContainer.classList.remove('hidden');
+      } else {
+        rendicionContainer.classList.add('hidden');
+      }
+
+      const tb = document.getElementById('cl_tbody'); tb.innerHTML='';
+      const state1Opts = ['PENDIENTE','EN RUTA','ENTREGADO','ENCOMIENDA ENTREGADA','CANCELADO','REAGENDADO','NO CONTESTA','RECHAZADO','RECHAZADO EN EL LUGAR','NO DESEA','CANCELÓ POR WHATSAPP','DEVUELTO A DEPÓSITO'];
+
+      tableRows.sort((a,b)=> new Date(a.assigned_at||a.created_at) - new Date(b.assigned_at||b.created_at))
+        .forEach(o=>{
+          const fee = getOrderFeeForDelivery(o);
+          const neto = Number(o.total_gs||0) - fee;
+          const badgeS2 = o.status2 ? `<span class="badge">${o.status2}</span>` : '';
+          const s1Sel = (me?.role==='ADMIN')
+            ? `<select class="clo_s1" data-id="${o.id}">
+                ${state1Opts.map(s=>`<option value="${s}" ${s===o.status?'selected':''}>${s}</option>`).join('')}
+               </select>`
+            : (o.status||'');
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${new Date(o.assigned_at||o.created_at).toLocaleString('es-PY')}</td>
+            <td>${o.id}</td>
+            <td>${o.city||''}</td>
+            <td>${o.customer_name||''}</td>
+            <td class="right">${nf(o.total_gs)}</td>
+            <td class="right">${nf(fee)}</td>
+            <td class="right">${nf(neto)}</td>
+            <td>${s1Sel}</td>
+            <td>
+              ${badgeS2}
+              <select class="clo_s2" data-id="${o.id}">
+                <option value="">-- Elegir --</option>
+                <option value="DEVUELTO A DEPÓSITO">DEVUELTO A DEPÓSITO</option>
+                <option value="SALIÓ EN RUTA NUEVAMENTE">SALIÓ EN RUTA NUEVAMENTE</option>
+              </select>
+            </td>`;
+          tb.appendChild(tr);
+        });
+
+      tb.querySelectorAll('.clo_s1').forEach(sel=>{
+        sel.onchange=(e)=>{
+          const orderId = e.target.getAttribute('data-id');
+          const newS1   = e.target.value;
+          const tok=localStorage.getItem(tokenKey);
+          google.script.run
+            .withSuccessHandler(()=>{ toast('Estado 1 actualizado'); loadClosures(); refreshDashboard(); refreshWallet(); })
+            .withFailureHandler(err=>{ toast(err.message||err); loadClosures(); })
+            .updateOrderStatus(tok, orderId, newS1, '');
+        };
+      });
+
+      tb.querySelectorAll('.clo_s2').forEach(sel=>{
+        sel.onchange=(e)=>{
+          const orderId = e.target.getAttribute('data-id');
+          const choice  = e.target.value;
+          if (!choice) return;
+          google.script.run
+            .withSuccessHandler(()=>{ toast('Estado 2 (cierre) guardado'); loadClosures(); })
+            .withFailureHandler(err=>{ toast(err.message||err); loadClosures(); })
+            .updateOrderStatus2(tok, orderId, choice);
+        };
+      });
+      markUpdated();
+    };
+
+    if (Array.isArray(lastOrders) && lastOrders.length){
+      afterOrders(lastOrders);
+    } else {
+      google.script.run.withSuccessHandler(rows=>{ lastOrders=rows; afterOrders(rows); })
+        .withFailureHandler(e=>toast(e.message||e)).listOrders(tok);
+    }
+  }
+
+  // === NUEVO: Vista Pedidos con guías Pendientes (lógica)
+  function wirePendingGuidesSearch(){
+    const q=document.getElementById('pg_q');
+    if (!q) return;
+    let t=null;
+    const trigger=()=>{ clearTimeout(t); t=setTimeout(renderPendingGuides, 160); };
+    q.addEventListener('input', trigger);
+    q.addEventListener('keyup', (e)=>{ if (e.key==='Enter') renderPendingGuides(); });
+  }
+
+  function isPendingGuideStatus(status2){
+    const s = String(status2||'').trim().toUpperCase();
+    // Consideramos "pendiente" todo lo que NO sea exactamente 'GUIA GENERADA'
+    return (s === '' || s === '--' || s !== 'GUIA GENERADA');
+  }
+
+  function renderPendingGuides(){
+    const tb = document.getElementById('pg_tbody');
+    if (!tb) return;
+
+    const fEl = document.getElementById('pg_from');
+    const tEl = document.getElementById('pg_to');
+    const qEl = document.getElementById('pg_q');
+
+    const f = fEl?.value ? new Date(fEl.value+'T00:00:00') : new Date('1970-01-01');
+    const t = tEl?.value ? new Date(tEl.value+'T23:59:59') : new Date('2999-12-31');
+    const q = norm(qEl?.value||'');
+
+    // Filtramos: rango + búsqueda + "sin guía"
+    const rows = (lastOrders||[]).filter(o=>{
+      const d = new Date(o.created_at);
+      if (d < f || d > t) return false;
+
+      if (q){
+        const idNum = String(o.id||'').replace(/^[a-z]+/i,'');
+        const hay = [o.customer_name||'', o.phone||'', o.city||'', o.created_by||'', o.id||'', idNum].map(norm).join(' ');
+        if (!hay.includes(q)) return false;
+      }
+      return isPendingGuideStatus(o.status2);
+    });
+
+    // KPI
+    const k = document.getElementById('pg_k_cnt');
+    if (k) k.textContent = nf(rows.length);
+
+    tb.innerHTML = '';
+
+    const state2Opts = ['--','GUIA GENERADA','FUERA DE COBERTURA','CANCELADO','REPETIDO','RENDIDO'];
+    rows.forEach(o=>{
+      const s2Sel = (me && (me.role==='ADMIN' || me.role==='DESPACHANTE'))
+        ? `<select class="pg_s2" data-id="${o.id}">
+             ${state2Opts.map(s=>`<option value="${s}" ${s===o.status2?'selected':''}>${s}</option>`).join('')}
+           </select>`
+        : `<span class="badge">${o.status2||'--'}</span>`;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${new Date(o.created_at).toLocaleString('es-PY')}</td>
+        <td>${o.id}</td>
+        <td>${o.city||''}</td>
+        <td>${o.customer_name||''}</td>
+        <td>${o.created_by||''}</td>
+        <td>${s2Sel}</td>
+        <td><button class="btn small" onclick="openGuide('${o.id}')">Vista previa</button></td>
+      `;
+      tb.appendChild(tr);
+    });
+
+    // Manejo de cambios en Estado 2
+    tb.querySelectorAll('.pg_s2').forEach(sel=>{
+      sel.onchange = (e)=>{
+        const id = e.target.getAttribute('data-id');
+        const val = e.target.value;
+        const tok = localStorage.getItem(tokenKey);
+        google.script.run
+          .withSuccessHandler(()=>{
+            // Actualizamos el objeto en memoria
+            const idx = (lastOrders||[]).findIndex(o=>String(o.id)===String(id));
+            if (idx>=0){ lastOrders[idx].status2 = val; }
+            // Si pasó a GUIA GENERADA, quitamos la fila y recalculamos KPI
+            renderPendingGuides();
+            toast('Estado 2 actualizado');
+          })
+          .withFailureHandler(err=>{
+            toast(err.message||err);
+            renderPendingGuides();
+          })
+          .updateOrderStatus2(tok, id, val);
+      };
+    });
+  }
+  // === FIN NUEVO ===
+
+  /* ===================== NUEVO: PERFIL – funciones ===================== */
+  function onOpenProfile(){
+    // precarga del email/nombre si ya hay sesión
+    const em = me?.email || '';
+    const nm = me?.name || '';
+    if (document.getElementById('pf_email')) document.getElementById('pf_email').value = em;
+    if (document.getElementById('pf_name') && !document.getElementById('pf_name').value) document.getElementById('pf_name').value = nm;
+
+    // === NUEVO: enganchar preview de foto ===
+    wireProfilePhotoPreview();
+
+    loadProfile();
+  }
+
+  function loadProfile(){
+    const tok = localStorage.getItem(tokenKey);
+    google.script.run
+      .withSuccessHandler(p=>{
+        // p puede venir vacío si aún no guardaste nada
+        const v = p || {};
+        pf_name.value  = v.name || (me?.name||'');
+        pf_email.value = me?.email || '';
+        pf_phone.value = v.phone || '';
+        pf_doc.value   = v.doc || '';
+        pf_addr.value  = v.addr || '';
+
+        pf_bank_name.value   = v.bank_name || '';
+        pf_bank_type.value   = v.bank_type || '';
+        pf_bank_num.value    = v.bank_num || '';
+        pf_bank_holder.value = v.bank_holder || '';
+        pf_bank_holder_ci.value = v.bank_holder_ci || '';
+
+        pf_wallet_provider.value = v.wallet_provider || '';
+        pf_wallet_number.value   = v.wallet_number || '';
+        pf_wallet_holder.value   = v.wallet_holder || '';
+      })
+      .withFailureHandler(()=>{/* solo preview */})
+      .getMyProfile?.(tok); // ← si aún no existe en GS, no rompe
+  }
+
+  function saveProfile(){
+    const tok = localStorage.getItem(tokenKey);
+    const payload = {
+      name: pf_name.value.trim(),
+      email: pf_email.value.trim(),
+      phone: pf_phone.value.trim(),
+      doc: pf_doc.value.trim(),
+      addr: pf_addr.value.trim(),
+      bank_name: pf_bank_name.value.trim(),
+      bank_type: pf_bank_type.value.trim(),
+      bank_num: pf_bank_num.value.trim(),
+      bank_holder: pf_bank_holder.value.trim(),
+      bank_holder_ci: pf_bank_holder_ci.value.trim(),
+      wallet_provider: pf_wallet_provider.value.trim(),
+      wallet_number: pf_wallet_number.value.trim(),
+      wallet_holder: pf_wallet_holder.value.trim()
+    };
+    google.script.run
+      .withSuccessHandler(()=>{ toast('Perfil guardado'); })
+      .withFailureHandler(e=>{ toast(e.message||e); })
+      .saveMyProfile?.(tok, payload); // ← si aún no existe en GS, no rompe
+  }
+
+  // === NUEVA FUNCIÓN: preview de foto local (no toca GS) ===
+  function wireProfilePhotoPreview(){
+    const file = document.getElementById('pf_file');
+    const img  = document.getElementById('pf_avatar');
+    if (!file || !img) return;
+    // Evitar duplicar listeners si vuelven a abrir la pestaña
+    file.onchange = null;
+    file.addEventListener('change', ()=>{
+      const f = file.files && file.files[0];
+      if (!f) return;
+      if (f.size > 2*1024*1024){ // 2MB
+        toast('La imagen no debe superar 2MB');
+        file.value = '';
+        return;
+      }
+      img.src = URL.createObjectURL(f);
+    }, { once:false });
+  }
+  /* ================== FIN PERFIL ================== */
+
+  // Autoinicio
+  (function boot(){
+    const saved = localStorage.getItem(emailKey)||''; if (saved){ try{ li_email.value=saved; li_saveemail.checked=true; }catch(e){} }
+    init();
+  })();
+</script>
+</div>
+</body>
+</html>
